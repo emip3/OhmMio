@@ -1,7 +1,7 @@
 [
   {
-    "code": "1",
-    "name": "Tarifa 1 — Templado",
+    "code": "01",
+    "name": "Tarifa 01 — Templado",
     "monthlyLimitKwh": 250,
     "description": "Localidades con temperatura mínima promedio en verano menor a 25°C. Incluye CDMX, Puebla, Tlaxcala, Toluca y la mayoría del altiplano central.",
     "temperatureRange": "<25°C en verano",

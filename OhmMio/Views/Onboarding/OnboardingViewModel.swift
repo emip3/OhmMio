@@ -26,6 +26,11 @@ final class OnboardingViewModel {
     var isProcessing: Bool = false
     var errorMessage: String?
 
+    /// Aviso suave sobre la detección de ubicación. A diferencia de `errorMessage`,
+    /// esto NO bloquea el flujo: el onboarding se completa igual y el usuario puede
+    /// elegir el municipio después desde Profile.
+    var locationWarning: String?
+
     // Datos parciales recolectados durante el flujo
     var parsedReceipt: ReceiptParser.ParsedReceipt?
     var capturedImage: UIImage?
@@ -112,8 +117,20 @@ final class OnboardingViewModel {
         }
 
         do {
-            // 1. Detectar región (con fallback silencioso)
-            let region = try? await locationService.detectRegion()
+            // 1. Detectar región. Capturamos el error pero NO bloqueamos el
+            //    onboarding: si el GPS falla o el usuario negó permiso, igual
+            //    completamos el flujo y le dejamos un mensaje para que pueda
+            //    elegir el municipio manualmente desde Profile.
+            var region: Region?
+            do {
+                region = try await locationService.detectRegion()
+            } catch {
+                region = nil
+                // Guardamos el motivo para que la UI lo muestre como aviso suave.
+                // No usamos `errorMessage` porque eso bloquearía el "Listo" —
+                // este es un warning, no un error fatal.
+                locationWarning = error.localizedDescription
+            }
 
             // 2. Construir Receipt
             let receipt = Receipt(

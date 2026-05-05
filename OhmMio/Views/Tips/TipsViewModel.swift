@@ -13,8 +13,18 @@ import SwiftUI
 final class TipsViewModel {
 
     enum Category: String, CaseIterable {
-        case timing = "⏰ Por hora"
-        case devices = "📊 Por aparato"
+        case timing = "Por hora"
+        case devices = "Por aparato"
+
+        /// Retorna el nombre del SF Symbol correspondiente
+        var sfSymbol: String {
+            switch self {
+            case .timing:
+                return "clock.badge.checkmark" // Representa el tiempo y el análisis
+            case .devices:
+                return "chart.bar.fill" // Representa el desglose por aparatos
+            }
+        }
     }
 
     enum State {

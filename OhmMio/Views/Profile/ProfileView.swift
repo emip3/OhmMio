@@ -392,7 +392,7 @@ private struct RegionPickerContent: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Buscar municipio o estado")
+        .searchable(text: $searchText, prompt: "Buscar estado")
         .overlay {
             if regions.isEmpty {
                 ProgressView("Cargando municipios…")
