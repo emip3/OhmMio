@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2026-05",
+    "sources": [
+      "Comisión Reguladora de Energía (CRE) — Factor de Emisión Eléctrico 2024: 0.444 tCO2e/MWh",
+      "CENACE — Reportes de Energía Generada por Tipo de Tecnología 2024-2025",
+      "SENER — Reporte de Avance de Energías Limpias (RAEL) 2024",
+      "Low Carbon Power México 2025: 60% gas, 8% hidro, 6% solar, 5.7% eólica, 2.65% nuclear"
+    ],
+    "nationalAverageFactor": 0.444,
+    "unit": "kg CO2 equivalente por kWh",
+    "thresholds": {
+      "clean": "< 0.30 kg CO2/kWh — predominio de nuclear, hidro, solar y eólica",
+      "medium": "0.30 - 0.50 kg CO2/kWh — mezcla típica con base de gas natural",
+      "dirty": "> 0.50 kg CO2/kWh — despacho de plantas de respaldo (gas de ciclo abierto, combustóleo, diésel)"
+    },
+    "patternRationale": "El SEN mexicano tiene un perfil dominado por gas natural (~60-65%). Durante el día (10 AM-4 PM) la generación solar fotovoltaica desplaza el gas hasta ~6-8% del mix horario, bajando el factor. En madrugada (12-6 AM) opera principalmente la base térmica + nuclear + hidro de filo de agua, factor medio. En el pico vespertino (6-10 PM) la demanda alcanza el récord de ~54 GW (verano 2025), CENACE despacha turbogas de respaldo y combustóleo, elevando el factor. El patrón se intensifica en verano por aire acondicionado masivo."
+  },
+  "scenarios": {
+    "weekday_summer": {
+      "description": "Día laboral, temporada cálida (mayo-octubre). Mayor demanda por A/C en pico vespertino.",
+      "hourlyFactors": [
+        { "hour": 0,  "kgCO2PerKwh": 0.42, "level": "medium", "dominantSources": "gas natural, nuclear, hidro" },
+        { "hour": 1,  "kgCO2PerKwh": 0.41, "level": "medium", "dominantSources": "gas natural, nuclear, hidro" },
+        { "hour": 2,  "kgCO2PerKwh": 0.40, "level": "medium", "dominantSources": "gas natural base, nuclear" },
+        { "hour": 3,  "kgCO2PerKwh": 0.39, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 4,  "kgCO2PerKwh": 0.39, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 5,  "kgCO2PerKwh": 0.40, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 6,  "kgCO2PerKwh": 0.42, "level": "medium", "dominantSources": "gas, inicio de demanda diaria" },
+        { "hour": 7,  "kgCO2PerKwh": 0.44, "level": "medium", "dominantSources": "gas, demanda matutina" },
+        { "hour": 8,  "kgCO2PerKwh": 0.42, "level": "medium", "dominantSources": "gas + solar incipiente" },
+        { "hour": 9,  "kgCO2PerKwh": 0.36, "level": "medium", "dominantSources": "gas + solar creciente" },
+        { "hour": 10, "kgCO2PerKwh": 0.29, "level": "clean",  "dominantSources": "solar fotovoltaica + hidro + gas" },
+        { "hour": 11, "kgCO2PerKwh": 0.26, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 12, "kgCO2PerKwh": 0.24, "level": "clean",  "dominantSources": "solar pico máximo" },
+        { "hour": 13, "kgCO2PerKwh": 0.25, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 14, "kgCO2PerKwh": 0.27, "level": "clean",  "dominantSources": "solar fuerte + hidro" },
+        { "hour": 15, "kgCO2PerKwh": 0.30, "level": "clean",  "dominantSources": "solar declinando + gas" },
+        { "hour": 16, "kgCO2PerKwh": 0.36, "level": "medium", "dominantSources": "gas + solar tardío" },
+        { "hour": 17, "kgCO2PerKwh": 0.45, "level": "medium", "dominantSources": "gas + demanda creciente, solar caída" },
+        { "hour": 18, "kgCO2PerKwh": 0.58, "level": "dirty",  "dominantSources": "gas + turbogas inicia" },
+        { "hour": 19, "kgCO2PerKwh": 0.68, "level": "dirty",  "dominantSources": "gas + turbogas + combustóleo (pico)" },
+        { "hour": 20, "kgCO2PerKwh": 0.72, "level": "dirty",  "dominantSources": "respaldo: turbogas + combustóleo + diésel" },
+        { "hour": 21, "kgCO2PerKwh": 0.66, "level": "dirty",  "dominantSources": "respaldo: turbogas + combustóleo" },
+        { "hour": 22, "kgCO2PerKwh": 0.55, "level": "dirty",  "dominantSources": "gas + turbogas declinando" },
+        { "hour": 23, "kgCO2PerKwh": 0.46, "level": "medium", "dominantSources": "gas, demanda nocturna" }
+      ]
+    },
+    "weekday_winter": {
+      "description": "Día laboral, temporada fría (noviembre-abril). Menor demanda por A/C, pero pico vespertino persiste por iluminación y calefacción.",
+      "hourlyFactors": [
+        { "hour": 0,  "kgCO2PerKwh": 0.40, "level": "medium", "dominantSources": "gas, nuclear, hidro" },
+        { "hour": 1,  "kgCO2PerKwh": 0.39, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 2,  "kgCO2PerKwh": 0.38, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 3,  "kgCO2PerKwh": 0.37, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 4,  "kgCO2PerKwh": 0.37, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 5,  "kgCO2PerKwh": 0.38, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 6,  "kgCO2PerKwh": 0.41, "level": "medium", "dominantSources": "gas, inicio de demanda" },
+        { "hour": 7,  "kgCO2PerKwh": 0.43, "level": "medium", "dominantSources": "gas, demanda matutina" },
+        { "hour": 8,  "kgCO2PerKwh": 0.41, "level": "medium", "dominantSources": "gas + solar incipiente" },
+        { "hour": 9,  "kgCO2PerKwh": 0.36, "level": "medium", "dominantSources": "gas + solar creciente" },
+        { "hour": 10, "kgCO2PerKwh": 0.30, "level": "clean",  "dominantSources": "solar fotovoltaica + hidro" },
+        { "hour": 11, "kgCO2PerKwh": 0.27, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 12, "kgCO2PerKwh": 0.25, "level": "clean",  "dominantSources": "solar pico máximo" },
+        { "hour": 13, "kgCO2PerKwh": 0.26, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 14, "kgCO2PerKwh": 0.28, "level": "clean",  "dominantSources": "solar fuerte + hidro" },
+        { "hour": 15, "kgCO2PerKwh": 0.32, "level": "medium", "dominantSources": "solar declinando + gas" },
+        { "hour": 16, "kgCO2PerKwh": 0.38, "level": "medium", "dominantSources": "gas + solar tardío" },
+        { "hour": 17, "kgCO2PerKwh": 0.46, "level": "medium", "dominantSources": "gas + demanda creciente" },
+        { "hour": 18, "kgCO2PerKwh": 0.55, "level": "dirty",  "dominantSources": "gas + turbogas inicia" },
+        { "hour": 19, "kgCO2PerKwh": 0.62, "level": "dirty",  "dominantSources": "gas + turbogas + iluminación pico" },
+        { "hour": 20, "kgCO2PerKwh": 0.65, "level": "dirty",  "dominantSources": "respaldo: turbogas + combustóleo" },
+        { "hour": 21, "kgCO2PerKwh": 0.58, "level": "dirty",  "dominantSources": "gas + turbogas" },
+        { "hour": 22, "kgCO2PerKwh": 0.50, "level": "medium", "dominantSources": "gas, demanda declinando" },
+        { "hour": 23, "kgCO2PerKwh": 0.44, "level": "medium", "dominantSources": "gas, demanda nocturna" }
+      ]
+    },
+    "weekend_summer": {
+      "description": "Fin de semana, temporada cálida. Demanda industrial reducida pero alta demanda residencial por A/C.",
+      "hourlyFactors": [
+        { "hour": 0,  "kgCO2PerKwh": 0.40, "level": "medium", "dominantSources": "gas, nuclear" },
+        { "hour": 1,  "kgCO2PerKwh": 0.39, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 2,  "kgCO2PerKwh": 0.37, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 3,  "kgCO2PerKwh": 0.36, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 4,  "kgCO2PerKwh": 0.36, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 5,  "kgCO2PerKwh": 0.37, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 6,  "kgCO2PerKwh": 0.38, "level": "medium", "dominantSources": "gas, demanda baja" },
+        { "hour": 7,  "kgCO2PerKwh": 0.39, "level": "medium", "dominantSources": "gas + solar incipiente" },
+        { "hour": 8,  "kgCO2PerKwh": 0.36, "level": "medium", "dominantSources": "gas + solar" },
+        { "hour": 9,  "kgCO2PerKwh": 0.30, "level": "clean",  "dominantSources": "solar + hidro" },
+        { "hour": 10, "kgCO2PerKwh": 0.25, "level": "clean",  "dominantSources": "solar fotovoltaica + hidro" },
+        { "hour": 11, "kgCO2PerKwh": 0.23, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 12, "kgCO2PerKwh": 0.21, "level": "clean",  "dominantSources": "solar pico máximo" },
+        { "hour": 13, "kgCO2PerKwh": 0.22, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 14, "kgCO2PerKwh": 0.24, "level": "clean",  "dominantSources": "solar fuerte + hidro" },
+        { "hour": 15, "kgCO2PerKwh": 0.27, "level": "clean",  "dominantSources": "solar declinando + gas" },
+        { "hour": 16, "kgCO2PerKwh": 0.32, "level": "medium", "dominantSources": "gas + solar tardío" },
+        { "hour": 17, "kgCO2PerKwh": 0.42, "level": "medium", "dominantSources": "gas + demanda residencial" },
+        { "hour": 18, "kgCO2PerKwh": 0.54, "level": "dirty",  "dominantSources": "gas + turbogas inicia" },
+        { "hour": 19, "kgCO2PerKwh": 0.64, "level": "dirty",  "dominantSources": "gas + turbogas (pico residencial)" },
+        { "hour": 20, "kgCO2PerKwh": 0.68, "level": "dirty",  "dominantSources": "turbogas + combustóleo" },
+        { "hour": 21, "kgCO2PerKwh": 0.62, "level": "dirty",  "dominantSources": "gas + turbogas" },
+        { "hour": 22, "kgCO2PerKwh": 0.52, "level": "dirty",  "dominantSources": "gas + turbogas declinando" },
+        { "hour": 23, "kgCO2PerKwh": 0.44, "level": "medium", "dominantSources": "gas, demanda nocturna" }
+      ]
+    },
+    "weekend_winter": {
+      "description": "Fin de semana, temporada fría. Demanda más baja, mayor proporción relativa de renovables.",
+      "hourlyFactors": [
+        { "hour": 0,  "kgCO2PerKwh": 0.38, "level": "medium", "dominantSources": "gas, nuclear, hidro" },
+        { "hour": 1,  "kgCO2PerKwh": 0.37, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 2,  "kgCO2PerKwh": 0.35, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 3,  "kgCO2PerKwh": 0.34, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 4,  "kgCO2PerKwh": 0.34, "level": "medium", "dominantSources": "gas base, nuclear, eólica" },
+        { "hour": 5,  "kgCO2PerKwh": 0.35, "level": "medium", "dominantSources": "gas base, nuclear" },
+        { "hour": 6,  "kgCO2PerKwh": 0.37, "level": "medium", "dominantSources": "gas, demanda baja" },
+        { "hour": 7,  "kgCO2PerKwh": 0.38, "level": "medium", "dominantSources": "gas + solar incipiente" },
+        { "hour": 8,  "kgCO2PerKwh": 0.35, "level": "medium", "dominantSources": "gas + solar" },
+        { "hour": 9,  "kgCO2PerKwh": 0.30, "level": "clean",  "dominantSources": "solar + hidro" },
+        { "hour": 10, "kgCO2PerKwh": 0.26, "level": "clean",  "dominantSources": "solar fotovoltaica + hidro" },
+        { "hour": 11, "kgCO2PerKwh": 0.24, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 12, "kgCO2PerKwh": 0.22, "level": "clean",  "dominantSources": "solar pico máximo" },
+        { "hour": 13, "kgCO2PerKwh": 0.23, "level": "clean",  "dominantSources": "solar pico + hidro" },
+        { "hour": 14, "kgCO2PerKwh": 0.25, "level": "clean",  "dominantSources": "solar fuerte + hidro" },
+        { "hour": 15, "kgCO2PerKwh": 0.29, "level": "clean",  "dominantSources": "solar declinando + gas" },
+        { "hour": 16, "kgCO2PerKwh": 0.34, "level": "medium", "dominantSources": "gas + solar tardío" },
+        { "hour": 17, "kgCO2PerKwh": 0.42, "level": "medium", "dominantSources": "gas + demanda residencial" },
+        { "hour": 18, "kgCO2PerKwh": 0.50, "level": "dirty",  "dominantSources": "gas + turbogas inicia" },
+        { "hour": 19, "kgCO2PerKwh": 0.58, "level": "dirty",  "dominantSources": "gas + turbogas + iluminación" },
+        { "hour": 20, "kgCO2PerKwh": 0.60, "level": "dirty",  "dominantSources": "turbogas + combustóleo" },
+        { "hour": 21, "kgCO2PerKwh": 0.54, "level": "dirty",  "dominantSources": "gas + turbogas" },
+        { "hour": 22, "kgCO2PerKwh": 0.46, "level": "medium", "dominantSources": "gas, demanda declinando" },
+        { "hour": 23, "kgCO2PerKwh": 0.40, "level": "medium", "dominantSources": "gas, demanda nocturna" }
+      ]
+    }
+  }
+}

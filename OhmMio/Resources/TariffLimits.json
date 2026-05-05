@@ -1,0 +1,66 @@
+[
+  {
+    "code": "1",
+    "name": "Tarifa 1 — Templado",
+    "monthlyLimitKwh": 250,
+    "description": "Localidades con temperatura mínima promedio en verano menor a 25°C. Incluye CDMX, Puebla, Tlaxcala, Toluca y la mayoría del altiplano central.",
+    "temperatureRange": "<25°C en verano",
+    "exampleStates": ["Ciudad de México", "Puebla", "Tlaxcala", "Estado de México (zona alta)", "Hidalgo"]
+  },
+  {
+    "code": "1A",
+    "name": "Tarifa 1A — Cálido leve",
+    "monthlyLimitKwh": 300,
+    "description": "Temperatura mínima promedio en verano de 25°C. Aplicable a localidades con clima cálido moderado.",
+    "temperatureRange": "≥25°C en verano",
+    "exampleStates": ["Querétaro (zonas bajas)", "Morelos (zonas bajas)", "Veracruz (altiplano)"]
+  },
+  {
+    "code": "1B",
+    "name": "Tarifa 1B — Cálido",
+    "monthlyLimitKwh": 400,
+    "description": "Temperatura mínima promedio en verano de 28°C. Localidades con clima cálido húmedo o semiseco.",
+    "temperatureRange": "≥28°C en verano",
+    "exampleStates": ["Veracruz (costa)", "Tabasco (zonas frescas)", "Nayarit"]
+  },
+  {
+    "code": "1C",
+    "name": "Tarifa 1C — Cálido extremo",
+    "monthlyLimitKwh": 850,
+    "description": "Temperatura mínima promedio en verano de 30°C. Localidades con calor intenso prolongado.",
+    "temperatureRange": "≥30°C en verano",
+    "exampleStates": ["Tabasco", "Yucatán (interior)", "Sinaloa (centro)"]
+  },
+  {
+    "code": "1D",
+    "name": "Tarifa 1D — Muy cálido",
+    "monthlyLimitKwh": 1000,
+    "description": "Temperatura mínima promedio en verano de 31°C. Climas muy calurosos.",
+    "temperatureRange": "≥31°C en verano",
+    "exampleStates": ["Quintana Roo", "Campeche", "Sinaloa (norte)"]
+  },
+  {
+    "code": "1E",
+    "name": "Tarifa 1E — Extremoso",
+    "monthlyLimitKwh": 2000,
+    "description": "Temperatura mínima promedio en verano de 32°C. Localidades con calor extremo sostenido.",
+    "temperatureRange": "≥32°C en verano",
+    "exampleStates": ["Sonora (costa)", "Baja California Sur", "Tamaulipas (norte)"]
+  },
+  {
+    "code": "1F",
+    "name": "Tarifa 1F — Calor extremo",
+    "monthlyLimitKwh": 2500,
+    "description": "Temperatura mínima promedio en verano de 33°C o superior. Las localidades más calurosas del país.",
+    "temperatureRange": "≥33°C en verano",
+    "exampleStates": ["Mexicali", "Hermosillo", "Ciudad Juárez", "Nuevo Laredo"]
+  },
+  {
+    "code": "DAC",
+    "name": "Tarifa DAC — Doméstica de Alto Consumo",
+    "monthlyLimitKwh": 0,
+    "description": "Tarifa sin subsidio aplicable cuando el promedio móvil de 12 meses excede el límite de la tarifa asignada. Costo por kWh aumenta 5-7 veces más cargo fijo mensual de $142.41 MXN. Salida requiere mantener consumo bajo durante 12 meses consecutivos.",
+    "temperatureRange": "N/A — penalización por exceso de consumo",
+    "exampleStates": []
+  }
+]

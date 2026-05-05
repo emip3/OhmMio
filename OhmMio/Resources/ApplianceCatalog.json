@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2026-05",
+    "source": "CONUEE — Comisión Nacional para el Uso Eficiente de la Energía. Promedios de potencia para electrodomésticos típicos en hogares mexicanos.",
+    "note": "Los valores nominalWatts y standbyWatts son promedios de aparatos de gama media. estimatedHoursDaily es una estimación de uso típico que el usuario puede ajustar en el formulario de inventario (M4)."
+  },
+  "categories": {
+    "climate": "Climatización",
+    "kitchen": "Cocina",
+    "laundry": "Lavandería",
+    "electronics": "Electrónicos"
+  },
+  "appliances": [
+    {
+      "categoryKey": "miniSplit",
+      "category": "climate",
+      "displayName": "Aire acondicionado",
+      "sfSymbol": "wind",
+      "nominalWatts": 1500,
+      "estimatedHoursDaily": 6.0,
+      "standbyWatts": 3,
+      "canBeShutOff": true,
+      "priorityWeight": 10,
+      "notes": "El aparato de mayor impacto en hogares con tarifa cálida. 1.5 ton (12,000 BTU) consume ~1500W. En tarifas 1C-1F representa hasta el 60% del consumo total bimestral en verano."
+    },
+    {
+      "categoryKey": "fan",
+      "category": "climate",
+      "displayName": "Ventilador",
+      "sfSymbol": "fan.oscillation",
+      "nominalWatts": 75,
+      "estimatedHoursDaily": 8.0,
+      "standbyWatts": 0,
+      "canBeShutOff": true,
+      "priorityWeight": 2,
+      "notes": "Alternativa eficiente al A/C. Ventilador de torre o de techo (40-100W). Reemplazar A/C por ventilador 4 horas al día puede ahorrar 5-6 kWh diarios."
+    },
+    {
+      "categoryKey": "heater",
+      "category": "climate",
+      "displayName": "Calefactor eléctrico",
+      "sfSymbol": "flame",
+      "nominalWatts": 1500,
+      "estimatedHoursDaily": 3.0,
+      "standbyWatts": 0,
+      "canBeShutOff": true,
+      "priorityWeight": 9,
+      "notes": "Calefactor de resistencia eléctrica. Alto consumo (1500W). Uso típico en zonas de altiplano en invierno."
+    },
+    {
+      "categoryKey": "refrigerator",
+      "category": "kitchen",
+      "displayName": "Refrigerador",
+      "sfSymbol": "refrigerator.fill",
+      "nominalWatts": 150,
+      "estimatedHoursDaily": 24.0,
+      "standbyWatts": 150,
+      "canBeShutOff": false,
+      "priorityWeight": 7,
+      "notes": "Aparato siempre encendido. Refrigerador de 14-16 pies cúbicos consume promedio ~150W (con duty cycle). No se apaga, pero un modelo eficiente (FIDE A) consume 40% menos que uno tipo C."
+    },
+    {
+      "categoryKey": "microwave",
+      "category": "kitchen",
+      "displayName": "Microondas",
+      "sfSymbol": "microwave.fill",
+      "nominalWatts": 1100,
+      "estimatedHoursDaily": 0.25,
+      "standbyWatts": 3,
+      "canBeShutOff": true,
+      "priorityWeight": 3,
+      "notes": "Alta potencia pero uso muy corto. Standby por reloj y panel: ~3W constantes (26 kWh/año en standby)."
+    },
+    {
+      "categoryKey": "airFryer",
+      "category": "kitchen",
+      "displayName": "Freidora de aire",
+      "sfSymbol": "oven.fill",
+      "nominalWatts": 1500,
+      "estimatedHoursDaily": 0.5,
+      "standbyWatts": 0,
+      "canBeShutOff": true,
+      "priorityWeight": 4,
+      "notes": "Alternativa más eficiente al horno convencional. 1500W pero ciclos cortos."
+    },
+    {
+      "categoryKey": "electricStove",
+      "category": "kitchen",
+      "displayName": "Estufa eléctrica",
+      "sfSymbol": "stove.fill",
+      "nominalWatts": 2500,
+      "estimatedHoursDaily": 1.0,
+      "standbyWatts": 0,
+      "canBeShutOff": true,
+      "priorityWeight": 8,
+      "notes": "Parrillas eléctricas (no inducción) consumen 2000-3000W por boquilla. En México la mayoría de hogares usa gas LP, pero la electrificación residencial está creciendo."
+    },
+    {
+      "categoryKey": "washer",
+      "category": "laundry",
+      "displayName": "Lavadora",
+      "sfSymbol": "washer.fill",
+      "nominalWatts": 500,
+      "estimatedHoursDaily": 0.7,
+      "standbyWatts": 1,
+      "canBeShutOff": true,
+      "priorityWeight": 5,
+      "notes": "Lavadora automática 16 kg típica: ~500W promedio por ciclo (1 hora). Si calienta agua eléctricamente, puede llegar a 2000W."
+    },
+    {
+      "categoryKey": "dryer",
+      "category": "laundry",
+      "displayName": "Secadora",
+      "sfSymbol": "dryer.fill",
+      "nominalWatts": 3000,
+      "estimatedHoursDaily": 0.5,
+      "standbyWatts": 1,
+      "canBeShutOff": true,
+      "priorityWeight": 9,
+      "notes": "Secadora eléctrica (no de gas): 2500-3500W. Uno de los aparatos de mayor consumo por ciclo. Tendido al aire libre puede ahorrar 1.5-2 kWh por ciclo."
+    },
+    {
+      "categoryKey": "gamingPC",
+      "category": "electronics",
+      "displayName": "PC Gaming",
+      "sfSymbol": "desktopcomputer",
+      "nominalWatts": 450,
+      "estimatedHoursDaily": 4.0,
+      "standbyWatts": 5,
+      "canBeShutOff": true,
+      "priorityWeight": 6,
+      "notes": "PC con GPU de gama media-alta (RTX 4060/4070 + monitor): 350-600W bajo carga. Standby: 5W (modo suspensión). Sesiones largas pueden equiparar consumo de A/C en zonas templadas."
+    },
+    {
+      "categoryKey": "tv",
+      "category": "electronics",
+      "displayName": "Televisión",
+      "sfSymbol": "tv.fill",
+      "nominalWatts": 100,
+      "estimatedHoursDaily": 5.0,
+      "standbyWatts": 1,
+      "canBeShutOff": true,
+      "priorityWeight": 3,
+      "notes": "TV LED 50-55 pulgadas: 80-130W. Standby: ~1W. El consumo en standby acumulado por todos los electrónicos del hogar puede sumar 5-10% del recibo."
+    },
+    {
+      "categoryKey": "console",
+      "category": "electronics",
+      "displayName": "Consola de videojuegos",
+      "sfSymbol": "gamecontroller.fill",
+      "nominalWatts": 180,
+      "estimatedHoursDaily": 2.5,
+      "standbyWatts": 10,
+      "canBeShutOff": true,
+      "priorityWeight": 4,
+      "notes": "PS5/Xbox Series X bajo carga: 150-200W. Modo de reposo conectado: ~10W (88 kWh/año solo en standby). Apagar completamente reduce significativamente."
+    },
+    {
+      "categoryKey": "modem",
+      "category": "electronics",
+      "displayName": "Módem / Router WiFi",
+      "sfSymbol": "wifi.router.fill",
+      "nominalWatts": 12,
+      "estimatedHoursDaily": 24.0,
+      "standbyWatts": 12,
+      "canBeShutOff": false,
+      "priorityWeight": 1,
+      "notes": "Siempre encendido. ~10-15W constantes. Aunque el consumo unitario es bajo, suma ~100 kWh/año por estar siempre activo. No se recomienda apagar (impacta servicios IoT y cámaras de seguridad)."
+    }
+  ]
+}
