@@ -18,15 +18,39 @@ final class ProfileViewModel {
         case error(String)
     }
 
+    // MARK: - Estado público
+
     var state: State = .loading
     var catalog: [ApplianceCatalogEntry] = []
 
-    private let storage: StorageService
+    /// Lista de municipios para el picker manual. Se carga perezosamente la primera vez
+    /// que la UI lo necesita.
+    var availableMunicipalities: [Region] = []
 
-    init(storage: StorageService) {
+    /// Mensaje que la vista puede mostrar como "toast" o nota debajo del botón
+    /// de detección — separado de `state` porque no queremos romper la UI cargada
+    /// solo porque la detección de ubicación falló.
+    var locationStatusMessage: String?
+
+    /// Bandera de UI mientras está corriendo `detectRegion()` o `setRegionManually(...)`.
+    var isUpdatingRegion: Bool = false
+
+    // MARK: - Dependencias
+
+    private let storage: StorageService
+    private let locationService: LocationService
+
+    init(storage: StorageService, locationService: LocationService) {
         self.storage = storage
+        self.locationService = locationService
         loadCatalog()
     }
+
+    convenience init(storage: StorageService) {
+        self.init(storage: storage, locationService: LocationService())
+    }
+
+    // MARK: - Carga inicial
 
     func load() async {
         state = .loading
@@ -38,6 +62,59 @@ final class ProfileViewModel {
             state = .error(error.localizedDescription)
         }
     }
+
+    // MARK: - Región: detección por GPS
+
+    /// Pide ubicación, mapea a municipio CFE y guarda en el User.
+    /// Si falla, deja un mensaje en `locationStatusMessage` sin romper el estado cargado.
+    func detectRegion() async {
+        guard case .loaded(let user, _) = state else { return }
+        isUpdatingRegion = true
+        locationStatusMessage = nil
+
+        do {
+            let region = try await locationService.detectRegion()
+            user.region = region
+            try storage.save()
+            await load()
+            locationStatusMessage = "Ubicación actualizada: \(region.municipality)"
+        } catch {
+            locationStatusMessage = error.localizedDescription
+        }
+
+        isUpdatingRegion = false
+    }
+
+    // MARK: - Región: selección manual (fallback)
+
+    /// Carga la lista completa de municipios para mostrar en el picker.
+    /// Llamar al abrir el sheet manual.
+    func loadMunicipalitiesForPicker() {
+        guard availableMunicipalities.isEmpty else { return }
+        do {
+            availableMunicipalities = try locationService.allMunicipalities()
+                .sorted { $0.municipality < $1.municipality }
+        } catch {
+            locationStatusMessage = "No pudimos cargar la lista de municipios."
+        }
+    }
+
+    /// Guarda manualmente la región elegida por el usuario en el picker.
+    func setRegionManually(_ region: Region) async {
+        guard case .loaded(let user, _) = state else { return }
+        isUpdatingRegion = true
+        user.region = region
+        do {
+            try storage.save()
+            await load()
+            locationStatusMessage = "Ubicación guardada: \(region.municipality)"
+        } catch {
+            locationStatusMessage = "No pudimos guardar tu ubicación."
+        }
+        isUpdatingRegion = false
+    }
+
+    // MARK: - Aparatos
 
     func updateAppliances(selectedKeys: Set<String>) async {
         guard case .loaded(let user, _) = state else { return }
@@ -76,6 +153,8 @@ final class ProfileViewModel {
         }
     }
 
+    // MARK: - Recibos
+
     func updateReceipt(parsed: ReceiptParser.ParsedReceipt) async {
         guard case .loaded(let user, _) = state,
               let kwh = parsed.kwhConsumed,
@@ -101,7 +180,7 @@ final class ProfileViewModel {
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Helpers privados
 
     private func loadCatalog() {
         guard let url = Bundle.main.url(forResource: "ApplianceCatalog", withExtension: "json"),
@@ -119,3 +198,4 @@ final class ProfileViewModel {
         return tariffs.first { $0.code == code }
     }
 }
+

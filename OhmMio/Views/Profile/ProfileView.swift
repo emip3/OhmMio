@@ -12,7 +12,14 @@ struct ProfileView: View {
     @State var viewModel: ProfileViewModel
     @State private var showAppliancesSheet = false
     @State private var showReceiptSheet = false
+    @State private var showRegionPickerSheet = false
     @State private var editableReceipt = ReceiptParser.ParsedReceipt()
+
+    @FocusState private var receiptFieldFocus: ReceiptField?
+
+    enum ReceiptField: Hashable {
+        case kwh, tariff, total
+    }
 
     var body: some View {
         NavigationStack {
@@ -41,9 +48,12 @@ struct ProfileView: View {
         .sheet(isPresented: $showReceiptSheet) {
             receiptEditorSheet
         }
+        .sheet(isPresented: $showRegionPickerSheet) {
+            regionPickerSheet
+        }
     }
 
-    // MARK: - Secciones
+    // MARK: - Sección Zona
 
     private func zoneSection(user: User, tariff: Tariff?) -> some View {
         Section("Tu zona") {
@@ -53,22 +63,78 @@ struct ProfileView: View {
                 Text(user.region?.municipality ?? "No detectado")
                     .foregroundStyle(Color.secondary)
             }
+
+            if let region = user.region {
+                HStack {
+                    Text("Estado")
+                    Spacer()
+                    Text(region.state).foregroundStyle(Color.secondary)
+                }
+            }
+
             HStack {
                 Text("Tarifa")
                 Spacer()
-                Text(tariff?.code ?? "—")
+                Text(tariff?.code ?? user.region?.assignedTariffCode ?? "—")
                     .foregroundStyle(Color.secondary)
             }
+
             if let tariff {
                 HStack {
-                    Text("Límite mensual")
+                    Text("Límite bimestral")
                     Spacer()
-                    Text("\(tariff.monthlyLimitKwh) kWh")
+                    Text("\(tariff.monthlyLimitKwh * 2) kWh")
                         .foregroundStyle(Color.secondary)
                 }
             }
+
+            // Acciones de ubicación: detección por GPS o selección manual.
+            // Siempre visibles para que el usuario pueda corregir si la detección
+            // automática asignó un municipio incorrecto.
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 12) {
+                    Button {
+                        Task { await viewModel.detectRegion() }
+                    } label: {
+                        Label(
+                            user.region == nil ? "Detectar mi municipio" : "Volver a detectar",
+                            systemImage: "location.fill"
+                        )
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .tint(DesignTokens.accentSage)
+                    .disabled(viewModel.isUpdatingRegion)
+
+                    Button("Elegir manualmente") {
+                        viewModel.loadMunicipalitiesForPicker()
+                        showRegionPickerSheet = true
+                    }
+                    .font(.callout)
+                    .disabled(viewModel.isUpdatingRegion)
+                }
+
+                if viewModel.isUpdatingRegion {
+                    HStack(spacing: 6) {
+                        ProgressView().scaleEffect(0.7)
+                        Text("Detectando ubicación…")
+                            .font(.caption)
+                            .foregroundStyle(Color.secondary)
+                    }
+                }
+
+                if let msg = viewModel.locationStatusMessage {
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundStyle(Color.secondary)
+                        .transition(.opacity)
+                }
+            }
+            .padding(.top, 4)
         }
     }
+
+    // MARK: - Sección Recibo
 
     private func receiptSection(user: User) -> some View {
         Section("Tu último recibo") {
@@ -183,6 +249,7 @@ struct ProfileView: View {
                         ), format: .number)
                         .multilineTextAlignment(.trailing)
                         .keyboardType(.numberPad)
+                        .focused($receiptFieldFocus, equals: .kwh)
                     }
                     HStack {
                         Text("Tarifa")
@@ -192,6 +259,7 @@ struct ProfileView: View {
                             set: { editableReceipt.tariffCode = $0.uppercased() }
                         ))
                         .multilineTextAlignment(.trailing)
+                        .focused($receiptFieldFocus, equals: .tariff)
                     }
                     HStack {
                         Text("Total ($MXN)")
@@ -202,6 +270,7 @@ struct ProfileView: View {
                         ), format: .number)
                         .multilineTextAlignment(.trailing)
                         .keyboardType(.decimalPad)
+                        .focused($receiptFieldFocus, equals: .total)
                     }
                 }
             }
@@ -218,6 +287,34 @@ struct ProfileView: View {
                             showReceiptSheet = false
                         }
                     }
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Listo") {
+                        receiptFieldFocus = nil
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+
+    private var regionPickerSheet: some View {
+        NavigationStack {
+            RegionPickerContent(
+                regions: viewModel.availableMunicipalities,
+                onSelect: { region in
+                    Task {
+                        await viewModel.setRegionManually(region)
+                        showRegionPickerSheet = false
+                    }
+                }
+            )
+            .navigationTitle("Elegir municipio")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cerrar") { showRegionPickerSheet = false }
                 }
             }
         }
@@ -254,6 +351,54 @@ private struct AppliancesEditorContent: View {
         }
         .onAppear {
             selectedKeys = initialKeys
+        }
+    }
+}
+
+// MARK: - Sub-vista: picker de municipio (fallback manual)
+
+private struct RegionPickerContent: View {
+    let regions: [Region]
+    let onSelect: (Region) -> Void
+
+    @State private var searchText: String = ""
+
+    private var filtered: [Region] {
+        guard !searchText.isEmpty else { return regions }
+        let q = searchText.lowercased()
+        return regions.filter {
+            $0.municipality.lowercased().contains(q) ||
+            $0.state.lowercased().contains(q)
+        }
+    }
+
+    var body: some View {
+        List(filtered) { region in
+            Button {
+                onSelect(region)
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(region.municipality)
+                            .foregroundStyle(Color.primary)
+                        Text(region.state)
+                            .font(.caption)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    Spacer()
+                    Text("Tarifa \(region.assignedTariffCode)")
+                        .font(.caption)
+                        .foregroundStyle(DesignTokens.accentSage)
+                }
+            }
+        }
+        .searchable(text: $searchText, prompt: "Buscar municipio o estado")
+        .overlay {
+            if regions.isEmpty {
+                ProgressView("Cargando municipios…")
+            } else if filtered.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            }
         }
     }
 }

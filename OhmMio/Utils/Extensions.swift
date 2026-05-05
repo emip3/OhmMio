@@ -207,3 +207,35 @@ extension Collection {
         indices.contains(index) ? self[index] : nil
     }
 }
+
+// MARK: - Keyboard dismissal
+
+extension View {
+
+    /// Cierra el teclado activo en toda la app.
+    /// Útil para botones "Listo" o gestos de tap.
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+    }
+
+    /// Agrega un tap gesture en el fondo que cierra el teclado.
+    /// Útil cuando el usuario toca fuera de un TextField.
+    ///
+    /// ```swift
+    /// Form { ... }
+    ///     .dismissKeyboardOnTap()
+    /// ```
+    func dismissKeyboardOnTap() -> some View {
+        onTapGesture {
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder),
+                to: nil, from: nil, for: nil
+            )
+        }
+    }
+}

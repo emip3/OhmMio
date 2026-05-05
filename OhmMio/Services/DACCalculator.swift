@@ -34,7 +34,12 @@ struct DACCalculator {
         history: [Receipt],
         referenceDate: Date = Date()
     ) -> Assessment {
-        let limit = Double(tariff.monthlyLimitKwh)
+        // CFE factura por bimestre. El campo `monthlyLimitKwh` del JSON es mensual,
+        // pero `receipt.kwhConsumed` es bimestral. Convertimos el límite a la misma unidad.
+        // Para DAC (limit = 0) lo dejamos en 0 — la tarifa ya es la sancionada.
+        let monthlyLimit = Double(tariff.monthlyLimitKwh)
+        let bimonthlyLimit = tariff.isDAC ? 0 : monthlyLimit * 2.0
+
         let current = Double(receipt.kwhConsumed)
 
         // Proyección lineal al cierre del período de facturación
@@ -45,7 +50,7 @@ struct DACCalculator {
 
         let margin = DACMargin(
             currentConsumption: current,
-            limit: limit,
+            limit: bimonthlyLimit,
             projectedMonthEnd: projected
         )
 
