@@ -29,9 +29,22 @@
 		ADD7F9B82FA9E5BD00D82906 /* OhmMioUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OhmMioUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		ADD7FACB2FAA6BAD00D82906 /* Exceptions for "OhmMio" folder in "OhmMio" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ADD7F9A02FA9E5BB00D82906 /* OhmMio */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		ADD7F9A32FA9E5BB00D82906 /* OhmMio */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ADD7FACB2FAA6BAD00D82906 /* Exceptions for "OhmMio" folder in "OhmMio" target */,
+			);
 			path = OhmMio;
 			sourceTree = "<group>";
 		};
@@ -400,6 +413,10 @@
 				DEVELOPMENT_TEAM = QKQHBA6T5N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OhmMio/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "OhMio necesita acceso a la cámara para escanear tu recibo CFE y leer tu tarifa y consumo automáticamente.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "OhMio usa tu ubicación para asignar la tarifa CFE correcta según tu municipio. Solo se consulta una vez durante la configuración inicial.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Si no puedes escanear con la cámara, puedes seleccionar una foto de tu recibo desde tu galería.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -410,7 +427,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = none.OhmMio;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emilianoruizplancarte.ohmio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -432,6 +449,10 @@
 				DEVELOPMENT_TEAM = QKQHBA6T5N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OhmMio/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "OhMio necesita acceso a la cámara para escanear tu recibo CFE y leer tu tarifa y consumo automáticamente.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "OhMio usa tu ubicación para asignar la tarifa CFE correcta según tu municipio. Solo se consulta una vez durante la configuración inicial.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Si no puedes escanear con la cámara, puedes seleccionar una foto de tu recibo desde tu galería.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -442,7 +463,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = none.OhmMio;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emilianoruizplancarte.ohmio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
