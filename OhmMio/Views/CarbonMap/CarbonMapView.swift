@@ -28,7 +28,7 @@ struct CarbonMapView: View {
                                 .font(.system(size: 42, weight: .heavy, design: .rounded))
                                 .foregroundStyle(DesignTokens.accentSage)
                             Text("Cuándo conviene usar electrodomésticos pesados")
-                                .font(.body)
+                                .font(.title3.weight(.medium))
                                 .foregroundStyle(Color.secondary)
                         }
                         .padding(.horizontal)
@@ -67,7 +67,29 @@ struct CarbonMapView: View {
 
     @ViewBuilder
     private func loadedContent(matrix: [CarbonIntensity], nowHour: Int) -> some View {
-        VStack(alignment: .leading, spacing: 32) {
+        VStack(alignment: .leading, spacing: 36) {
+            
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "leaf.fill")
+                        .foregroundStyle(DesignTokens.accentSage)
+                        .font(.title2)
+                    Text("Impacto Ambiental")
+                        .font(.title2.weight(.heavy))
+                }
+                Text("Los watts que usas son los mismos, pero al ocuparlos en horarios distintos reduces tu huella de carbono. Elegir horas \"Limpias\" evita que se quemen combustibles fósiles, cuidando tu entorno y el planeta.")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(Color.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(4)
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: Color.black.opacity(0.04), radius: 10, y: 4)
+            .padding(.horizontal)
+
             nowCard(matrix: matrix, nowHour: nowHour)
                 .padding(.horizontal)
 
@@ -81,26 +103,30 @@ struct CarbonMapView: View {
 
     private func nowCard(matrix: [CarbonIntensity], nowHour: Int) -> some View {
         let now = matrix.first { $0.hour == nowHour }
-        return VStack(alignment: .leading, spacing: 12) {
+        return VStack(alignment: .leading, spacing: 16) {
             Text("AHORA")
-                .font(.caption.weight(.bold))
+                .font(.headline.weight(.heavy))
                 .foregroundStyle(Color.secondary)
                 .textCase(.uppercase)
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .center, spacing: 10) {
-                    Circle()
-                        .fill(gridColor(for: now?.level ?? .medium))
-                        .frame(width: 16, height: 16)
-                    
-                    Text(levelDisplayName(now?.level ?? .medium))
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(Color.primary)
-                    
-                    Spacer()
-                    
-                    Text(String(format: "%.2f kg CO₂/kWh", now?.kgCO2PerKwh ?? 0))
-                        .font(.subheadline)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .center, spacing: 12) {
+                        Circle()
+                            .fill(gridColor(for: now?.level ?? .medium))
+                            .frame(width: 24, height: 24)
+                        Text(levelDisplayName(now?.level ?? .medium))
+                            .font(.title2.weight(.heavy))
+                            .foregroundStyle(Color.primary)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text(String(format: "%.2f", now?.kgCO2PerKwh ?? 0))
+                        .font(.system(size: 36, weight: .heavy, design: .rounded))
+                        .foregroundStyle(gridColor(for: now?.level ?? .medium))
+                    Text("kg CO₂ / kWh")
+                        .font(.caption.weight(.bold))
                         .foregroundStyle(Color.secondary)
                 }
             }
@@ -115,14 +141,13 @@ struct CarbonMapView: View {
     private func hourGrid(matrix: [CarbonIntensity], nowHour: Int) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("HOY POR HORAS")
-                .font(.caption.weight(.bold))
+                .font(.headline.weight(.heavy))
                 .foregroundStyle(Color.secondary)
                 .textCase(.uppercase)
 
-            // Grid unido como matriz visual continua
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 6),
-                spacing: 2
+                columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3),
+                spacing: 16
             ) {
                 ForEach(displayHours, id: \.self) { hour in
                     if let intensity = matrix.first(where: { $0.hour == hour }) {
@@ -130,9 +155,6 @@ struct CarbonMapView: View {
                     }
                 }
             }
-            .background(Color.white) // Hace de líneas divisorias finas
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: Color.black.opacity(0.05), radius: 12, y: 6)
         }
     }
 
@@ -140,33 +162,47 @@ struct CarbonMapView: View {
         Button {
             selectedHour = intensity
         } label: {
-            VStack(spacing: 0) {
+            VStack(spacing: 4) {
                 Text(String(format: "%02d:00", intensity.hour))
-                    .font(.body.weight(.heavy))
-                    .foregroundStyle(Color.primary) // Excelente contraste WCAG
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.primary)
+                Text(String(format: "%.2f", intensity.kgCO2PerKwh))
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Color.primary.opacity(0.6))
             }
-            .frame(maxWidth: .infinity, minHeight: 64) // Celdas mucho más altas
-            .background(gridGradient(for: intensity.level))
-            .overlay(
-                // Contorno interior grueso para la hora actual
-                Rectangle()
-                    .stroke(isCurrent ? Color.primary : Color.clear, lineWidth: isCurrent ? 4 : 0)
+            .frame(maxWidth: .infinity, minHeight: 88)
+            .background(
+                ZStack {
+                    // Color sólido, sin degradado
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(gridColor(for: intensity.level).opacity(0.85))
+                    // Borde interno blanco sutil (efecto burbuja sin degradado)
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.white.opacity(0.55), lineWidth: 1.5)
+                }
             )
+            .shadow(
+                color: gridColor(for: intensity.level).opacity(isCurrent ? 0.55 : 0.2),
+                radius: isCurrent ? 16 : 8,
+                y: isCurrent ? 8 : 4
+            )
+            .scaleEffect(isCurrent ? 1.07 : 1.0)
             .accessibilityLabel(
                 "\(intensity.hour):00. \(levelDisplayName(intensity.level))."
             )
         }
         .buttonStyle(.plain)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isCurrent)
     }
 
     private var legend: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("LEYENDA")
-                .font(.caption.weight(.bold))
+                .font(.headline.weight(.heavy))
                 .foregroundStyle(Color.secondary)
                 .textCase(.uppercase)
 
-            HStack(spacing: 20) {
+            HStack(spacing: 24) {
                 legendItem(color: DesignTokens.heroGreen, label: "Limpia")
                 legendItem(color: DesignTokens.heroPeach, label: "Media")
                 legendItem(color: DesignTokens.heroRed, label: "Sucia")
@@ -176,31 +212,51 @@ struct CarbonMapView: View {
 
     private func legendItem(color: Color, label: String) -> some View {
         HStack(spacing: 8) {
-            Circle().fill(color).frame(width: 14, height: 14)
+            Circle().fill(color).frame(width: 20, height: 20)
             Text(label)
-                .font(.subheadline.weight(.bold))
+                .font(.headline.weight(.bold))
                 .foregroundStyle(Color.primary)
         }
     }
 
     private func hourDetailSheet(_ intensity: CarbonIntensity) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
+        VStack(alignment: .leading, spacing: 24) {
+            HStack(alignment: .center, spacing: 12) {
                 Circle()
                     .fill(gridColor(for: intensity.level))
-                    .frame(width: 16, height: 16)
-                Text("\(intensity.hour):00 — \(levelDisplayName(intensity.level))")
-                    .font(.title3.weight(.bold))
+                    .frame(width: 24, height: 24)
+                Text("\(String(format: "%02d", intensity.hour)):00 — \(levelDisplayName(intensity.level))")
+                    .font(.title.weight(.heavy))
             }
 
-            Text(String(format: "%.2f kg CO₂ por kWh", intensity.kgCO2PerKwh))
-                .font(.headline)
-                .foregroundStyle(Color.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Huella de Carbono")
+                    .font(.headline)
+                    .foregroundStyle(Color.secondary)
+                
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(String(format: "%.2f", intensity.kgCO2PerKwh))
+                        .font(.system(size: 56, weight: .heavy, design: .rounded))
+                        .foregroundStyle(gridColor(for: intensity.level))
+                    Text("kg CO₂ por kWh")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color.secondary)
+                }
+            }
+            
+            Text(explainerText(for: intensity.level))
+                .font(.body.weight(.medium))
+                .foregroundStyle(Color.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(gridColor(for: intensity.level).opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
 
             Spacer()
         }
-        .padding(24)
-        .presentationDetents([.height(140)])
+        .padding(32)
+        .presentationDetents([.height(340)])
         .presentationBackground(.regularMaterial)
     }
 
@@ -222,6 +278,14 @@ struct CarbonMapView: View {
     }
 
     // MARK: - Helpers
+
+    private func explainerText(for level: CarbonIntensity.Level) -> String {
+        switch level {
+        case .clean: return "¡Excelente momento! Gran parte de la energía viene del sol o el viento. Úsala sin culpa."
+        case .medium: return "Momento aceptable. La red está balanceada entre energías limpias y fósiles."
+        case .dirty: return "¡Evita este horario! Se queman muchos combustibles fósiles para cubrir los picos de demanda."
+        }
+    }
 
     private func levelDisplayName(_ level: CarbonIntensity.Level) -> String {
         switch level {

@@ -19,7 +19,7 @@ final class TipsViewModel {
 
     enum State {
         case loading
-        case loaded(ApplianceRanker.RecommendationSet, nextCleanHour: Int?)
+        case loaded(ApplianceRanker.RecommendationSet, nextCleanHour: Int?, pricePerKwh: Double)
         case empty
         case error(String)
     }
@@ -65,7 +65,11 @@ final class TipsViewModel {
                 carbon: carbon
             )
 
-            state = .loaded(recommendations, nextCleanHour: nextClean)
+            let pricePerKwh: Double = receipt.kwhConsumed > 0
+                ? receipt.totalAmountMXN / Double(receipt.kwhConsumed)
+                : 1.8 // estimado promedio CFE si no hay recibo
+
+            state = .loaded(recommendations, nextCleanHour: nextClean, pricePerKwh: pricePerKwh)
 
         } catch {
             state = .error(error.localizedDescription)

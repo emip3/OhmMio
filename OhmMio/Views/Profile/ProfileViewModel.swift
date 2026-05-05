@@ -21,7 +21,7 @@ final class ProfileViewModel {
     var state: State = .loading
     var catalog: [ApplianceCatalogEntry] = []
 
-    private let storage: StorageService
+    let storage: StorageService
 
     init(storage: StorageService) {
         self.storage = storage
