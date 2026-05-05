@@ -13,8 +13,8 @@ import SwiftUI
 final class TipsViewModel {
 
     enum Category: String, CaseIterable {
-        case timing = "⏰ Por hora"
-        case devices = "📊 Por aparato"
+        case timing = "Por hora"
+        case devices = "Por aparato"
     }
 
     enum State {

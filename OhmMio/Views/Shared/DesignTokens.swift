@@ -20,7 +20,7 @@ enum DesignTokens {
     // MARK: - Hero cards (color del estado destacado)
 
     static let heroGreen = Color(hex: 0x7FB5A8)
-    static let heroPeach = Color(hex: 0xE8A98A)
+    static let heroPeach = Color(hex: 0xE8A96A)
     static let heroRed   = Color(hex: 0xB85C5C)
 
     // MARK: - Acentos (botones, chips)
