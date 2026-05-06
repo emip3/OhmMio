@@ -12,41 +12,43 @@ struct TipsView: View {
     @State var viewModel: TipsViewModel
 
     var body: some View {
-        ZStack {
-            DesignTokens.bgGreen.ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("Consejos")
-                        .font(.system(size: 42, weight: .heavy, design: .rounded))
-                        .foregroundStyle(DesignTokens.accentSage)
-                        .padding(.horizontal)
-                        .padding(.top, 24)
-                    
-                    customSegmentedPicker
-                        .padding(.horizontal)
-                    
-                    switch viewModel.state {
-                    case .loading:
-                        ProgressView().padding(.top, 40).frame(maxWidth: .infinity)
-                    case .empty:
-                        emptyState
-                    case .error(let msg):
-                        errorState(msg)
-                    case .loaded(let recs, let nextClean, let pricePerKwh):
-                        content(recs: recs, nextCleanHour: nextClean, pricePerKwh: pricePerKwh)
+        NavigationStack {
+            ZStack {
+                DesignTokens.bgGreen.ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+
+                        customSegmentedPicker
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+
+                        switch viewModel.state {
+                        case .loading:
+                            ProgressView().padding(.top, 40).frame(maxWidth: .infinity)
+                        case .empty:
+                            emptyState
+                        case .error(let msg):
+                            errorState(msg)
+                        case .loaded(let recs, let nextClean, let pricePerKwh):
+                            content(recs: recs, nextCleanHour: nextClean, pricePerKwh: pricePerKwh)
+                        }
                     }
+                    .padding(.bottom, 32)
                 }
-                .padding(.bottom, 32)
+                .scrollIndicators(.hidden)
             }
+            // Title nativo en lugar del custom 42pt en el body.
+            .navigationTitle("Consejos")
+            .navigationBarTitleDisplayMode(.large)
         }
         .task { await viewModel.load() }
     }
-    
+
     // MARK: - Custom Picker
-    
+
     private var customSegmentedPicker: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             pickerTab(
                 title: TipsViewModel.Category.timing.rawValue,
                 icon: "clock.fill",
@@ -56,7 +58,7 @@ struct TipsView: View {
                     viewModel.selectedCategory = .timing
                 }
             }
-            
+
             pickerTab(
                 title: TipsViewModel.Category.devices.rawValue,
                 icon: "bolt.fill",
@@ -68,22 +70,26 @@ struct TipsView: View {
             }
         }
     }
-    
+
     private func pickerTab(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.title3.weight(.bold))
+                    .font(.subheadline.weight(.semibold))
                 Text(title)
-                    .font(.title3.weight(.bold))
+                    .font(.subheadline.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(isSelected ? Color.white : Color.white.opacity(0.4))
+            .padding(.vertical, 12)
+            .background(
+                isSelected ? Color.white : Color.white.opacity(0.4),
+                in: Capsule()
+            )
             .foregroundStyle(isSelected ? DesignTokens.accentSage : Color.secondary)
-            .clipShape(Capsule())
-            .shadow(color: isSelected ? DesignTokens.accentSage.opacity(0.15) : .clear, radius: 12, y: 4)
-            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .shadow(
+                color: isSelected ? DesignTokens.accentSage.opacity(0.12) : .clear,
+                radius: 8, y: 3
+            )
         }
         .buttonStyle(.plain)
     }
@@ -102,7 +108,7 @@ struct TipsView: View {
 
     // Modo timing
     private func timingMode(recs: ApplianceRanker.RecommendationSet, nextCleanHour: Int?) -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 14) {
             ForEach(recs.timingTips) { tip in
                 tipCard(title: tip.title, description: tip.description)
             }
@@ -115,57 +121,55 @@ struct TipsView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     // Modo aparatos
     private func devicesMode(recs: ApplianceRanker.RecommendationSet, pricePerKwh: Double) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             // Tarjeta explicativa
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
                     Image(systemName: "bolt.circle.fill")
-                        .font(.title2)
+                        .font(.title3)
                         .foregroundStyle(DesignTokens.accentSage)
                     Text("Tu impacto por aparato")
-                        .font(.title3.weight(.heavy))
+                        .font(.headline)
                         .foregroundStyle(DesignTokens.accentSage)
                 }
-                Text("Aquí ves qué aparatos consumen más en tu casa. El ranking (#1, #2...) te dice cuál pesa más en tu recibo mensual. La pastilla de color te indica qué tan urgente es actuar con ese aparato.")
-                    .font(.subheadline.weight(.medium))
+                Text("Aquí ves qué aparatos consumen más en tu casa. El ranking (#1, #2…) te dice cuál pesa más en tu recibo mensual. La pastilla de color te indica qué tan urgente es actuar.")
+                    .font(.subheadline)
                     .foregroundStyle(Color.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(3)
             }
-            .padding(20)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DesignTokens.accentSage.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .background(DesignTokens.accentSage.opacity(0.08),
+                        in: RoundedRectangle(cornerRadius: 16))
 
             ForEach(recs.deviceTips) { tip in
                 deviceCard(tip, pricePerKwh: pricePerKwh)
             }
         }
         .padding(.horizontal)
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     private func tipCard(title: String, description: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.title3.weight(.bold))
+                .font(.headline)
                 .foregroundStyle(DesignTokens.accentSage)
             Text(description)
-                .font(.body.weight(.medium))
-                .foregroundStyle(DesignTokens.accentSage.opacity(0.7))
+                .font(.subheadline)
+                .foregroundStyle(DesignTokens.accentSage.opacity(0.75))
                 .fixedSize(horizontal: false, vertical: true)
-                .lineSpacing(4)
+                .lineSpacing(2)
         }
-        .padding(24)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: DesignTokens.accentSage.opacity(0.05), radius: 10, y: 4)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .shadow(color: DesignTokens.accentSage.opacity(0.04), radius: 6, y: 2)
     }
 
     private func deviceCard(_ tip: ApplianceRanker.DeviceTip, pricePerKwh: Double) -> some View {
@@ -177,62 +181,60 @@ struct TipsView: View {
             }
         }()
 
-        return HStack(alignment: .top, spacing: 20) {
-            VStack(spacing: 12) {
+        return HStack(alignment: .top, spacing: 14) {
+            VStack(spacing: 8) {
                 Text("#\(tip.rank)")
-                    .font(.system(size: 42, weight: .black, design: .rounded))
+                    .font(.system(.title, design: .rounded, weight: .black))
                     .foregroundStyle(DesignTokens.accentTerra)
                 Image(systemName: tip.appliance.sfSymbol)
-                    .font(.system(size: 40))
+                    .font(.title)
                     .foregroundStyle(DesignTokens.accentSage)
             }
-            .frame(width: 64, alignment: .top)
+            .frame(width: 52, alignment: .top)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(tip.appliance.displayName)
-                        .font(.title2.weight(.heavy))
+                        .font(.headline)
                         .foregroundStyle(DesignTokens.accentSage)
                     Spacer()
                     Text(impactLevel.label)
-                        .font(.caption.weight(.heavy))
+                        .font(.caption2.weight(.heavy))
                         .foregroundStyle(impactLevel.color)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(impactLevel.color.opacity(0.15))
-                        .clipShape(Capsule())
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(impactLevel.color.opacity(0.15), in: Capsule())
                 }
 
                 Text(String(format: "%.1f kWh/día · %.0f%% del consumo total",
                             tip.dailyKwh, tip.percentageOfTotal))
-                    .font(.subheadline.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(DesignTokens.heroGreen)
 
                 Text(tip.advice)
-                    .font(.body.weight(.medium))
+                    .font(.subheadline)
                     .foregroundStyle(Color.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4)
-                    .padding(.top, 4)
+                    .lineSpacing(2)
+                    .padding(.top, 2)
             }
             Spacer(minLength: 0)
         }
-        .padding(28)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 32))
-        .shadow(color: DesignTokens.accentSage.opacity(0.08), radius: 16, y: 8)
+        .padding(18)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .shadow(color: DesignTokens.accentSage.opacity(0.06), radius: 10, y: 4)
     }
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Image(systemName: "lightbulb.slash")
-                .font(.system(size: 60))
+                .font(.largeTitle)
                 .foregroundStyle(DesignTokens.accentSage.opacity(0.5))
             Text("Sin datos suficientes")
-                .font(.title3.weight(.bold))
+                .font(.headline)
                 .foregroundStyle(DesignTokens.accentSage)
             Text("Agrega tus aparatos en Perfil para recibir consejos.")
-                .font(.body)
+                .font(.subheadline)
                 .foregroundStyle(Color.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -242,12 +244,12 @@ struct TipsView: View {
     }
 
     private func errorState(_ msg: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(DesignTokens.heroRed)
-                .font(.system(size: 60))
+                .font(.largeTitle)
             Text(msg)
-                .font(.body.weight(.medium))
+                .font(.callout)
                 .foregroundStyle(Color.secondary)
                 .multilineTextAlignment(.center)
             Button("Reintentar") {

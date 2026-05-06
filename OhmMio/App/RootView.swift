@@ -14,6 +14,9 @@ import SwiftData
 ///
 /// Mantiene una sola fuente de verdad (`User` desde SwiftData) y
 /// construye el `StorageService` compartido para toda la app.
+///
+/// También aplica la preferencia global de tamaño de letra que el
+/// usuario controla desde Perfil → Ajustes → Tamaño de letra.
 struct RootView: View {
 
     @Environment(\.modelContext) private var modelContext
@@ -21,6 +24,14 @@ struct RootView: View {
 
     @State private var storage: StorageService?
     @State private var didBootstrap = false
+
+    /// Preferencia persistida del tamaño de letra. Default `.medium`,
+    /// que corresponde al tamaño base del sistema (Dynamic Type).
+    @AppStorage("preferredTextSize") private var preferredTextSizeRaw: String = AppTextSize.medium.rawValue
+
+    private var preferredTextSize: AppTextSize {
+        AppTextSize(rawValue: preferredTextSizeRaw) ?? .medium
+    }
 
     var body: some View {
         Group {
@@ -33,6 +44,10 @@ struct RootView: View {
                     .background(DesignTokens.bgGreen.ignoresSafeArea())
             }
         }
+        // Una sola línea hace que TODA la app respete el tamaño de letra
+        // elegido. Funciona en cualquier vista que use estilos semánticos
+        // (.body, .title, .headline, etc.) en vez de tamaños hardcoded.
+        .dynamicTypeSize(preferredTextSize.dynamicTypeSize)
         .task {
             guard !didBootstrap else { return }
             didBootstrap = true

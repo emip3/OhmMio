@@ -17,22 +17,19 @@ struct CarbonMapView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Nuevo fondo durazno claro para variar
+                // Fondo durazno claro (mantenemos la diferenciación atmosférica
+                // entre tabs).
                 DesignTokens.bgPeach.ignoresSafeArea()
-                
+
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 28) {
-                        
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Mapa de huella")
-                                .font(.system(size: 42, weight: .heavy, design: .rounded))
-                                .foregroundStyle(DesignTokens.accentSage)
-                            Text("Cuándo conviene usar electrodomésticos pesados")
-                                .font(.title3.weight(.medium))
-                                .foregroundStyle(Color.secondary)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 16)
+                    VStack(alignment: .leading, spacing: 24) {
+
+                        // Subtítulo bajo el navigation title (que ahora es
+                        // "Red" con large display, nativo de iOS).
+                        Text("Cuándo conviene usar electrodomésticos pesados")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.secondary)
+                            .padding(.horizontal)
 
                         switch viewModel.state {
                         case .loading:
@@ -45,9 +42,12 @@ struct CarbonMapView: View {
                     }
                     .padding(.bottom, 32)
                 }
+                .scrollIndicators(.hidden)
             }
+            // Title nativo de iOS, large display (más Apple que un H1
+            // custom de 42pt en el body).
             .navigationTitle("Red")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
         }
         .task { await viewModel.load() }
         .sheet(
@@ -67,27 +67,26 @@ struct CarbonMapView: View {
 
     @ViewBuilder
     private func loadedContent(matrix: [CarbonIntensity], nowHour: Int) -> some View {
-        VStack(alignment: .leading, spacing: 36) {
-            
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 24) {
+
+            // Card explicativa — material translúcido (más Apple) y
+            // tipografía semántica.
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "leaf.fill")
                         .foregroundStyle(DesignTokens.accentSage)
-                        .font(.title2)
-                    Text("Impacto Ambiental")
-                        .font(.title2.weight(.heavy))
+                        .symbolEffect(.pulse, options: .repeat(.continuous))
+                    Text("Impacto ambiental")
+                        .font(.headline)
                 }
-                Text("Los watts que usas son los mismos, pero al ocuparlos en horarios distintos reduces tu huella de carbono. Elegir horas \"Limpias\" evita que se quemen combustibles fósiles, cuidando tu entorno y el planeta.")
-                    .font(.body.weight(.medium))
+                Text("Los watts que usas son los mismos, pero al ocuparlos en horarios distintos reduces tu huella de carbono. Elegir horas \"limpias\" evita que se quemen combustibles fósiles.")
+                    .font(.subheadline)
                     .foregroundStyle(Color.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4)
             }
-            .padding(24)
+            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: Color.black.opacity(0.04), radius: 10, y: 4)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
             .padding(.horizontal)
 
             nowCard(matrix: matrix, nowHour: nowHour)
@@ -101,172 +100,258 @@ struct CarbonMapView: View {
         }
     }
 
+    // MARK: - Card "AHORA"
+
     private func nowCard(matrix: [CarbonIntensity], nowHour: Int) -> some View {
         let now = matrix.first { $0.hour == nowHour }
-        return VStack(alignment: .leading, spacing: 16) {
-            Text("AHORA")
-                .font(.headline.weight(.heavy))
-                .foregroundStyle(Color.secondary)
-                .textCase(.uppercase)
+        let level = now?.level ?? .medium
 
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .center, spacing: 12) {
-                        Circle()
-                            .fill(gridColor(for: now?.level ?? .medium))
-                            .frame(width: 24, height: 24)
-                        Text(levelDisplayName(now?.level ?? .medium))
-                            .font(.title2.weight(.heavy))
-                            .foregroundStyle(Color.primary)
-                    }
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 6) {
+                Image(systemName: "clock.fill")
+                    .font(.caption)
+                Text("AHORA · \(String(format: "%02d", nowHour)):00")
+            }
+            .font(.ohmSectionLabel)
+            .foregroundStyle(Color.secondary)
+            .textCase(.uppercase)
+
+            HStack(alignment: .center) {
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(gridColor(for: level))
+                        .frame(width: 18, height: 18)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.6), lineWidth: 2)
+                        )
+                    Text(levelDisplayName(level))
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color.primary)
                 }
+
                 Spacer()
+
                 VStack(alignment: .trailing, spacing: 0) {
                     Text(String(format: "%.2f", now?.kgCO2PerKwh ?? 0))
-                        .font(.system(size: 36, weight: .heavy, design: .rounded))
-                        .foregroundStyle(gridColor(for: now?.level ?? .medium))
+                        .font(.ohmStatNumber)
+                        .foregroundStyle(gridColor(for: level))
+                        .contentTransition(.numericText())
                     Text("kg CO₂ / kWh")
-                        .font(.caption.weight(.bold))
+                        .font(.caption2.weight(.semibold))
                         .foregroundStyle(Color.secondary)
                 }
             }
         }
-        .padding(24)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: Color.black.opacity(0.04), radius: 10, y: 4)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(gridColor(for: level).opacity(0.25), lineWidth: 1)
+        )
     }
 
+    // MARK: - Grid de horas
+
     private func hourGrid(matrix: [CarbonIntensity], nowHour: Int) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("HOY POR HORAS")
-                .font(.headline.weight(.heavy))
-                .foregroundStyle(Color.secondary)
-                .textCase(.uppercase)
+        let currentRoundedHour = roundedNowHour(nowHour)
+
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Hoy por horas")
+                    .font(.ohmSectionLabel)
+                    .foregroundStyle(Color.secondary)
+                    .textCase(.uppercase)
+
+                Spacer()
+
+                // Mini-leyenda: indica que la celda con halo es la hora
+                // actual. Refuerza la intención visual.
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(DesignTokens.accentSage)
+                        .frame(width: 6, height: 6)
+                    Text("Estás aquí")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(Color.secondary)
+                }
+            }
 
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3),
-                spacing: 16
+                columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3),
+                spacing: 12
             ) {
                 ForEach(displayHours, id: \.self) { hour in
                     if let intensity = matrix.first(where: { $0.hour == hour }) {
-                        hourCell(intensity: intensity, isCurrent: hour == roundedNowHour(nowHour))
+                        hourCell(
+                            intensity: intensity,
+                            isCurrent: hour == currentRoundedHour
+                        )
                     }
                 }
             }
         }
     }
 
+    // MARK: - Celda individual del grid
+    //
+    // Antes la celda actual sólo crecía 1.07× con un shadow más fuerte —
+    // demasiado sutil. Ahora:
+    //   • Badge "AHORA" flotante en la esquina superior derecha
+    //   • Anillo de color del nivel (3pt) con halo difuso
+    //   • Las celdas no actuales bajan a 0.55 de opacidad → contraste claro
+    //   • Spring + symbolEffect pulse en el reloj del badge
+    //   • Tipografía semántica (.ohmGridHour) que respeta Dynamic Type
+
     private func hourCell(intensity: CarbonIntensity, isCurrent: Bool) -> some View {
-        Button {
+        let color = gridColor(for: intensity.level)
+
+        return Button {
             selectedHour = intensity
         } label: {
-            VStack(spacing: 4) {
-                Text(String(format: "%02d:00", intensity.hour))
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.primary)
-                Text(String(format: "%.2f", intensity.kgCO2PerKwh))
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.primary.opacity(0.6))
-            }
-            .frame(maxWidth: .infinity, minHeight: 88)
-            .background(
-                ZStack {
-                    // Color sólido, sin degradado
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(gridColor(for: intensity.level).opacity(0.85))
-                    // Borde interno blanco sutil (efecto burbuja sin degradado)
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color.white.opacity(0.55), lineWidth: 1.5)
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: 4) {
+                    Text(String(format: "%02d:00", intensity.hour))
+                        .font(.ohmGridHour)
+                        .foregroundStyle(isCurrent ? Color.white : Color.primary)
+                    Text(String(format: "%.2f", intensity.kgCO2PerKwh))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(
+                            isCurrent
+                                ? Color.white.opacity(0.85)
+                                : Color.primary.opacity(0.55)
+                        )
                 }
-            )
-            .shadow(
-                color: gridColor(for: intensity.level).opacity(isCurrent ? 0.55 : 0.2),
-                radius: isCurrent ? 16 : 8,
-                y: isCurrent ? 8 : 4
-            )
-            .scaleEffect(isCurrent ? 1.07 : 1.0)
-            .accessibilityLabel(
-                "\(intensity.hour):00. \(levelDisplayName(intensity.level))."
-            )
+                .frame(maxWidth: .infinity, minHeight: 72)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            isCurrent
+                                ? color
+                                : color.opacity(0.18)
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            isCurrent ? color : Color.clear,
+                            lineWidth: 0
+                        )
+                )
+
+                // Badge flotante "AHORA" — sólo en la celda actual.
+                if isCurrent {
+                    HStack(spacing: 3) {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 8, weight: .bold))
+                            .symbolEffect(.pulse, options: .repeat(.continuous))
+                        Text("AHORA")
+                            .font(.system(size: 9, weight: .heavy))
+                    }
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(.white, in: Capsule())
+                    .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                    .offset(x: 6, y: -8)
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
         }
         .buttonStyle(.plain)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isCurrent)
+        .scaleEffect(isCurrent ? 1.05 : 1.0)
+        .opacity(isCurrent ? 1.0 : 0.92)
+        .shadow(
+            color: isCurrent ? color.opacity(0.45) : color.opacity(0.10),
+            radius: isCurrent ? 14 : 4,
+            y: isCurrent ? 6 : 2
+        )
+        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isCurrent)
+        .accessibilityLabel(
+            "\(intensity.hour):00. \(levelDisplayName(intensity.level))." +
+            (isCurrent ? " Hora actual." : "")
+        )
     }
 
+    // MARK: - Leyenda
+
     private var legend: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("LEYENDA")
-                .font(.headline.weight(.heavy))
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Leyenda")
+                .font(.ohmSectionLabel)
                 .foregroundStyle(Color.secondary)
                 .textCase(.uppercase)
 
-            HStack(spacing: 24) {
+            HStack(spacing: 16) {
                 legendItem(color: DesignTokens.heroGreen, label: "Limpia")
                 legendItem(color: DesignTokens.heroPeach, label: "Media")
                 legendItem(color: DesignTokens.heroRed, label: "Sucia")
+                Spacer()
             }
         }
     }
 
     private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 8) {
-            Circle().fill(color).frame(width: 20, height: 20)
+        HStack(spacing: 6) {
+            Circle().fill(color).frame(width: 12, height: 12)
             Text(label)
-                .font(.headline.weight(.bold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.primary)
         }
     }
 
+    // MARK: - Sheet de detalle por hora
+
     private func hourDetailSheet(_ intensity: CarbonIntensity) -> some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .center, spacing: 12) {
                 Circle()
                     .fill(gridColor(for: intensity.level))
-                    .frame(width: 24, height: 24)
+                    .frame(width: 18, height: 18)
                 Text("\(String(format: "%02d", intensity.hour)):00 — \(levelDisplayName(intensity.level))")
-                    .font(.title.weight(.heavy))
+                    .font(.title3.weight(.heavy))
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Huella de Carbono")
-                    .font(.headline)
+                Text("Huella de carbono")
+                    .font(.subheadline)
                     .foregroundStyle(Color.secondary)
-                
+
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(String(format: "%.2f", intensity.kgCO2PerKwh))
-                        .font(.system(size: 56, weight: .heavy, design: .rounded))
+                        .font(.ohmHero)
                         .foregroundStyle(gridColor(for: intensity.level))
                     Text("kg CO₂ por kWh")
-                        .font(.title3.weight(.bold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.secondary)
                 }
             }
-            
+
             Text(explainerText(for: intensity.level))
-                .font(.body.weight(.medium))
+                .font(.callout)
                 .foregroundStyle(Color.primary)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(20)
+                .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(gridColor(for: intensity.level).opacity(0.15))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .background(gridColor(for: intensity.level).opacity(0.12),
+                            in: RoundedRectangle(cornerRadius: 14))
 
             Spacer()
         }
-        .padding(32)
-        .presentationDetents([.height(340)])
+        .padding(28)
+        .presentationDetents([.height(320)])
         .presentationBackground(.regularMaterial)
+        .presentationDragIndicator(.visible)
     }
 
     private func errorState(_ msg: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(DesignTokens.heroRed)
-                .font(.system(size: 60))
+                .font(.largeTitle)
             Text(msg)
-                .font(.body.weight(.medium))
+                .font(.callout)
                 .foregroundStyle(Color.secondary)
                 .multilineTextAlignment(.center)
             Button("Reintentar") { Task { await viewModel.load() } }
@@ -294,23 +379,13 @@ struct CarbonMapView: View {
         case .dirty:  return "Pico de demanda"
         }
     }
-    
+
     private func gridColor(for level: CarbonIntensity.Level) -> Color {
         switch level {
         case .clean:  return DesignTokens.heroGreen
         case .medium: return DesignTokens.heroPeach
         case .dirty:  return DesignTokens.heroRed
         }
-    }
-
-    /// Genera un degradado sutil para la matriz
-    private func gridGradient(for level: CarbonIntensity.Level) -> LinearGradient {
-        let baseColor = gridColor(for: level)
-        return LinearGradient(
-            colors: [baseColor.opacity(0.7), baseColor],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 
     /// Redondea la hora actual al múltiplo de 2 más cercano hacia abajo.

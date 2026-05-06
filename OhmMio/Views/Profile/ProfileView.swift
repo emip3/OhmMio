@@ -12,15 +12,18 @@ struct ProfileView: View {
     @State var viewModel: ProfileViewModel
     @State private var showAppliancesSheet = false
     @State private var showReceiptSheet = false
-<<<<<<< HEAD
+
     @State private var showScannerSheet = false
     @State private var showReceiptOptions = false
-=======
+
     @State private var showRegionPickerSheet = false
->>>>>>> origin/main
     @State private var editableReceipt = ReceiptParser.ParsedReceipt()
 
     @FocusState private var receiptFieldFocus: ReceiptField?
+
+    /// Preferencia global de tamaño de letra. Vive en RootView pero la
+    /// editamos también desde aquí; @AppStorage se sincroniza solo.
+    @AppStorage("preferredTextSize") private var preferredTextSizeRaw: String = AppTextSize.medium.rawValue
 
     enum ReceiptField: Hashable {
         case kwh, tariff, total
@@ -39,8 +42,10 @@ struct ProfileView: View {
                         zoneSection(user: user, tariff: tariff)
                         receiptSection(user: user)
                         appliancesSection(user: user)
+                        appearanceSection(user: user)
                         settingsSection(user: user)
                     }
+                    .scrollContentBackground(.hidden)
                 }
             }
             .navigationTitle("Perfil")
@@ -53,13 +58,12 @@ struct ProfileView: View {
         .sheet(isPresented: $showReceiptSheet) {
             receiptEditorSheet
         }
-<<<<<<< HEAD
+
         .fullScreenCover(isPresented: $showScannerSheet) {
             ScannerView(viewModel: ScannerViewModel(storage: viewModel.storage))
-=======
+        }
         .sheet(isPresented: $showRegionPickerSheet) {
             regionPickerSheet
->>>>>>> origin/main
         }
     }
 
@@ -209,13 +213,15 @@ struct ProfileView: View {
         }
     }
 
-    private func settingsSection(user: User) -> some View {
-        Section("Ajustes") {
-            Toggle("Notificaciones", isOn: Binding(
-                get: { user.preferences.notificationsEnabled },
-                set: { user.preferences.notificationsEnabled = $0 }
-            ))
+    // MARK: - Sección Apariencia (NUEVA)
+    //
+    // Sale del bloque "Ajustes" para darle prominencia: el usuario
+    // pidió específicamente poder controlar el tamaño de letra y queda
+    // junto al picker de tema (que es estéticamente lo más cercano).
 
+    private func appearanceSection(user: User) -> some View {
+        Section {
+            // Tema (claro / oscuro / sistema) — ya existía
             Picker("Apariencia", selection: Binding(
                 get: { user.preferences.preferredColorScheme },
                 set: { user.preferences.preferredColorScheme = $0 }
@@ -225,12 +231,93 @@ struct ProfileView: View {
                 Text("Oscuro").tag(UserPreferences.ColorSchemePreference.dark)
             }
 
+            // Tamaño de letra — control nuevo
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Label("Tamaño de letra", systemImage: "textformat.size")
+                    Spacer()
+                    Text(currentTextSize.displayName)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
+                        .contentTransition(.opacity)
+                }
+
+                // Slider con 5 paradas discretas. Más Apple que un picker
+                // segmentado en este caso porque sugiere un continuo.
+                HStack(spacing: 12) {
+                    Text("A")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(Color.secondary)
+
+                    Slider(
+                        value: textSizeBinding,
+                        in: 0...4,
+                        step: 1
+                    )
+                    .tint(DesignTokens.accentSage)
+
+                    Text("A")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color.secondary)
+                }
+
+                // Vista previa en vivo del tamaño elegido. Forzamos el
+                // dynamicTypeSize aquí para que se vea el cambio aunque
+                // el resto de la app ya esté escalada.
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "eye")
+                        .foregroundStyle(DesignTokens.accentSage)
+                    Text("Hola, así se verá tu app.")
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(Color.primary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DesignTokens.accentSage.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .dynamicTypeSize(currentTextSize.dynamicTypeSize)
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: currentTextSize)
+            }
+            .padding(.vertical, 4)
+        } header: {
+            Text("Apariencia")
+        } footer: {
+            Text("El tamaño de letra afecta toda la app. Puedes ajustarlo cuando quieras.")
+        }
+    }
+
+    private func settingsSection(user: User) -> some View {
+        Section("Ajustes") {
+            Toggle("Notificaciones", isOn: Binding(
+                get: { user.preferences.notificationsEnabled },
+                set: { user.preferences.notificationsEnabled = $0 }
+            ))
+
             HStack {
                 Text("Acerca de OhMio")
                 Spacer()
                 Text("v1.0").foregroundStyle(Color.secondary)
             }
         }
+    }
+
+    // MARK: - Helpers para el slider de tamaño de letra
+
+    private var currentTextSize: AppTextSize {
+        AppTextSize(rawValue: preferredTextSizeRaw) ?? .medium
+    }
+
+    /// Mapea el AppTextSize a un Double 0–4 para el Slider y vice-versa.
+    private var textSizeBinding: Binding<Double> {
+        Binding(
+            get: {
+                Double(AppTextSize.allCases.firstIndex(of: currentTextSize) ?? 2)
+            },
+            set: { newValue in
+                let idx = max(0, min(AppTextSize.allCases.count - 1, Int(newValue.rounded())))
+                preferredTextSizeRaw = AppTextSize.allCases[idx].rawValue
+            }
+        )
     }
 
     // MARK: - Sheets

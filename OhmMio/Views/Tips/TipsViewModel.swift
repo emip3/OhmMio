@@ -15,8 +15,6 @@ final class TipsViewModel {
     enum Category: String, CaseIterable {
         case timing = "Por hora"
         case devices = "Por aparato"
-<<<<<<< HEAD
-=======
 
         /// Retorna el nombre del SF Symbol correspondiente
         var sfSymbol: String {
@@ -27,7 +25,6 @@ final class TipsViewModel {
                 return "chart.bar.fill" // Representa el desglose por aparatos
             }
         }
->>>>>>> origin/main
     }
 
     enum State {

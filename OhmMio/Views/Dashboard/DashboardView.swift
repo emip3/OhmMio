@@ -15,29 +15,43 @@ struct DashboardView: View {
     @State private var showDetailsSheet = false
 
     var body: some View {
-        ZStack {
-            backgroundColor.ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                backgroundColor.ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    header
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // El header custom de 42pt se reemplazó por el
+                        // navigationTitle con large display (más Apple).
+                        // Solo dejamos la fecha como subtítulo discreto.
+                        HStack {
+                            Text(todayString)
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
 
-                    switch viewModel.state {
-                    case .loading:
-                        ProgressView().frame(maxWidth: .infinity, minHeight: 300)
-                    case .empty:
-                        emptyState
-                    case .error(let message):
-                        errorState(message)
-                    case .loaded(let data):
-                        loadedContent(data)
+                        switch viewModel.state {
+                        case .loading:
+                            ProgressView().frame(maxWidth: .infinity, minHeight: 300)
+                        case .empty:
+                            emptyState
+                        case .error(let message):
+                            errorState(message)
+                        case .loaded(let data):
+                            loadedContent(data)
+                        }
                     }
+                    .padding()
                 }
-                .padding()
+                .scrollIndicators(.hidden)
+                .refreshable {
+                    await viewModel.load()
+                }
             }
-            .refreshable {
-                await viewModel.load()
-            }
+            .navigationTitle("OhMio")
+            .navigationBarTitleDisplayMode(.large)
         }
         .task {
             await viewModel.load()
@@ -53,23 +67,9 @@ struct DashboardView: View {
         return DesignTokens.accentSage
     }
 
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("OhMio")
-                    .font(.system(size: 42, weight: .heavy, design: .rounded))
-                    .foregroundStyle(dynamicHeroColor)
-                Text(todayString)
-                    .font(.subheadline)
-                    .foregroundStyle(Color.secondary)
-            }
-            Spacer()
-        }
-    }
-
     @ViewBuilder
     private func loadedContent(_ data: DashboardViewModel.DashboardData) -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             heroCard(data)
             actionCard(data)
             carbonNetworkCard(data)
@@ -79,44 +79,50 @@ struct DashboardView: View {
         }
     }
 
+    // MARK: - Hero card (margen DAC)
+
     private func heroCard(_ data: DashboardViewModel.DashboardData) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
+
+            // Chip "Margen antes del DAC" — más pequeño y refinado
             Text("Margen antes del DAC")
-                .font(.caption.weight(.bold))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.white.opacity(0.25))
+                .font(.caption.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(.white.opacity(0.22), in: Capsule())
                 .foregroundStyle(.white)
-                .clipShape(Capsule())
 
             HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(heroTitle(for: data.riskLevel))
-                        .font(.system(size: 42, weight: .heavy, design: .rounded))
+                        .font(.system(.title, design: .rounded, weight: .heavy))
                         .foregroundStyle(.white)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(heroSubtitle(for: data.riskLevel, margin: data.marginKwh))
-                        .font(.title3.weight(.medium))
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(.white.opacity(0.9))
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: -4) {
+                VStack(alignment: .trailing, spacing: -2) {
+                    // El número grande baja de 64pt a .ohmHero (largeTitle
+                    // rounded heavy ≈ 34pt en default, escalable).
                     Text(heroMarginPrefix(for: data.riskLevel) + "\(abs(data.marginKwh))")
-                        .font(.system(size: 64, weight: .heavy, design: .rounded))
+                        .font(.ohmHero)
                         .foregroundStyle(.white)
+                        .contentTransition(.numericText())
                     Text(heroMarginSuffix(for: data.riskLevel))
-                        .font(.headline.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.white.opacity(0.9))
                 }
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, 4)
 
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 GeometryReader { geo in
                     let pct = CGFloat(min(1, max(0, data.marginPercentage / 100)))
                     let fillW = geo.size.width * pct
-                    let boltSize: CGFloat = 40
-                    let barH: CGFloat = 24
+                    let boltSize: CGFloat = 32
+                    let barH: CGFloat = 18
                     ZStack(alignment: .leading) {
                         Capsule()
                             .fill(.white.opacity(0.3))
@@ -125,17 +131,16 @@ struct DashboardView: View {
                             .fill(.white)
                             .frame(width: fillW, height: barH)
                         Image(systemName: "bolt.fill")
-                            .font(.system(size: 18, weight: .black))
+                            .font(.system(size: 14, weight: .black))
                             .foregroundStyle(dynamicHeroColor)
                             .frame(width: boltSize, height: boltSize)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.2), radius: 5, y: 2)
+                            .background(Color.white, in: Circle())
+                            .shadow(color: .black.opacity(0.18), radius: 4, y: 2)
                             .offset(x: min(max(0, fillW - boltSize / 2), geo.size.width - boltSize))
                     }
                     .frame(height: boltSize, alignment: .center)
                 }
-                .frame(height: 40)
+                .frame(height: 32)
 
                 HStack {
                     Text("0%")
@@ -144,88 +149,40 @@ struct DashboardView: View {
                     Spacer()
                     Text("Límite")
                 }
-                .font(.subheadline.weight(.medium))
+                .font(.caption.weight(.medium))
                 .foregroundStyle(.white.opacity(0.85))
             }
         }
-        .padding(20)
-        .background(dynamicHeroColor)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .padding(18)
+        .background(dynamicHeroColor, in: RoundedRectangle(cornerRadius: 22))
     }
 
-    private func statsGrid(_ data: DashboardViewModel.DashboardData) -> some View {
-        HStack(spacing: 16) {
-            statCard(
-                title: "Impacto diario",
-                value: String(format: "%.1f", data.actionDecision.estimatedKwhSaved),
-                unit: "kWh evitado",
-                chipText: "potencial",
-                chipColor: DesignTokens.accentSage
-            )
-            
-            statCard(
-                title: "Ahorro al mes",
-                value: String(format: "$%.0f", data.actionDecision.estimatedMXNSaved),
-                unit: "pesos",
-                chipText: "estimado",
-                chipColor: DesignTokens.accentTerra
-            )
-        }
-    }
-    
-    private func statCard(title: String, value: String, unit: String, chipText: String, chipColor: Color) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(title)
-                .font(.headline.weight(.medium))
-                .foregroundStyle(Color.secondary)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(value)
-                    .font(.system(size: 40, weight: .heavy, design: .rounded))
-                Text(unit)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Color.secondary)
-            }
-            
-            Text(chipText)
-                .font(.caption.weight(.heavy))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(chipColor.opacity(0.15))
-                .foregroundStyle(chipColor)
-                .clipShape(Capsule())
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-    }
+    // MARK: - Action card (consejo del día)
 
     private func actionCard(_ data: DashboardViewModel.DashboardData) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             Text("TU CONSEJO DE HOY")
-                .font(.caption.weight(.heavy))
+                .font(.caption2.weight(.heavy))
                 .foregroundStyle(Color.secondary)
-                .padding(.bottom, 12)
+                .padding(.bottom, 8)
 
             Button(action: { showDetailsSheet = true }) {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 14) {
                     // Aparato + urgencia
                     HStack(spacing: 12) {
                         Image(systemName: data.actionDecision.applianceSFSymbol)
-                            .font(.title2)
+                            .font(.title3)
                             .foregroundStyle(dynamicHeroColor)
-                            .frame(width: 40, height: 40)
-                            .background(dynamicHeroColor.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .frame(width: 36, height: 36)
+                            .background(dynamicHeroColor.opacity(0.12),
+                                        in: RoundedRectangle(cornerRadius: 10))
 
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 1) {
                             Text("OhMio dice")
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundStyle(Color.secondary)
                             Text(data.actionDecision.applianceDisplayName)
-                                .font(.headline.weight(.bold))
+                                .font(.subheadline.weight(.bold))
                                 .foregroundStyle(Color.primary)
                         }
                         Spacer()
@@ -234,51 +191,51 @@ struct DashboardView: View {
 
                     // Narrativa
                     Text(data.narrativeText)
-                        .font(.body.weight(.medium))
+                        .font(.subheadline)
                         .foregroundStyle(Color.primary)
                         .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(3)
+                        .lineSpacing(2)
 
                     // Stats inline
                     HStack(spacing: 0) {
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 1) {
                             Text(String(format: "%.1f", data.actionDecision.estimatedKwhSaved))
-                                .font(.title2.weight(.heavy))
+                                .font(.ohmStatNumber)
                                 .foregroundStyle(Color.primary)
+                                .contentTransition(.numericText())
                             Text("kWh ahorrados")
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundStyle(Color.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Divider().frame(height: 40)
+                        Divider().frame(height: 32)
 
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 1) {
                             Text(String(format: "%.2f", data.actionDecision.estimatedCO2Saved))
-                                .font(.title2.weight(.heavy))
+                                .font(.ohmStatNumber)
                                 .foregroundStyle(Color.primary)
+                                .contentTransition(.numericText())
                             Text("kg CO\u{2082} evitados")
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundStyle(Color.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, 16)
+                        .padding(.leading, 14)
                     }
 
                     // CTA
                     HStack(spacing: 4) {
                         Text("Ver más detalles")
-                            .font(.subheadline.weight(.semibold))
+                            .font(.footnote.weight(.semibold))
                             .foregroundStyle(dynamicHeroColor)
                         Image(systemName: "arrow.right")
-                            .font(.subheadline.weight(.semibold))
+                            .font(.footnote.weight(.semibold))
                             .foregroundStyle(dynamicHeroColor)
                     }
                 }
-                .padding(20)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: Color.black.opacity(0.04), radius: 8, y: 3)
+                .padding(18)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
             }
             .buttonStyle(.plain)
         }
@@ -291,42 +248,45 @@ struct DashboardView: View {
         case .low:    ("Opcional",   DesignTokens.accentSage)
         }
         return Text(label)
-            .font(.caption.weight(.heavy))
+            .font(.caption2.weight(.heavy))
             .foregroundStyle(color)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(color.opacity(0.15))
-            .clipShape(Capsule())
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.15), in: Capsule())
     }
 
+    // MARK: - Card de estado de la red
+
     private func carbonNetworkCard(_ data: DashboardViewModel.DashboardData) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("ESTADO DE LA RED")
-                .font(.caption.weight(.heavy))
+                .font(.caption2.weight(.heavy))
                 .foregroundStyle(Color.secondary)
 
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 Image(systemName: carbonIcon(for: data.currentCarbonLevel))
-                    .font(.title2)
+                    .font(.title3)
                     .foregroundStyle(carbonColor(for: data.currentCarbonLevel))
-                    .frame(width: 44, height: 44)
-                    .background(carbonColor(for: data.currentCarbonLevel).opacity(0.12))
-                    .clipShape(Circle())
+                    .frame(width: 38, height: 38)
+                    .background(
+                        carbonColor(for: data.currentCarbonLevel).opacity(0.12),
+                        in: Circle()
+                    )
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(carbonTitle(for: data.currentCarbonLevel))
-                        .font(.headline.weight(.bold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.primary)
                     Text(data.currentCarbonAdvice)
-                        .font(.subheadline)
+                        .font(.footnote)
                         .foregroundStyle(Color.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
+                Spacer(minLength: 0)
             }
-            .padding(18)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: Color.black.opacity(0.04), radius: 8, y: 3)
+            .padding(16)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         }
     }
 
@@ -355,27 +315,26 @@ struct DashboardView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Image(systemName: "doc.text.viewfinder")
-                .font(.system(size: 60))
+                .font(.largeTitle)
                 .foregroundStyle(DesignTokens.accentSage)
             Text("Aún no tenemos tu recibo")
                 .font(.headline)
             Text("Escanea tu primer recibo CFE desde tu Perfil para empezar.")
-                .font(.body)
+                .font(.subheadline)
                 .foregroundStyle(Color.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func errorState(_ message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 50))
+                .font(.largeTitle)
                 .foregroundStyle(DesignTokens.heroRed)
             Text("Algo salió mal")
                 .font(.headline)
@@ -395,9 +354,9 @@ struct DashboardView: View {
     private func decisionDetailsSheet(_ data: DashboardViewModel.DashboardData) -> some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 14) {
                     Text(data.actionDecision.applianceDisplayName)
-                        .font(.title.weight(.bold))
+                        .font(.title3.weight(.bold))
                     Text(data.narrativeText)
                         .font(.body)
 
@@ -417,6 +376,7 @@ struct DashboardView: View {
             }
             .navigationTitle("Detalle del consejo")
             .navigationBarTitleDisplayMode(.inline)
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -436,7 +396,7 @@ struct DashboardView: View {
         }
         return DesignTokens.bgGreen
     }
-    
+
     private func heroTitle(for risk: DACMargin.RiskLevel) -> String {
         switch risk {
         case .safe: return "Vas muy\nbien"
@@ -444,7 +404,7 @@ struct DashboardView: View {
         case .danger: return "Actúa\nhoy"
         }
     }
-    
+
     private func heroSubtitle(for risk: DACMargin.RiskLevel, margin: Int) -> String {
         switch risk {
         case .safe: return "Margen amplio este bimestre"
@@ -472,7 +432,7 @@ struct DashboardView: View {
     private var todayString: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "es_MX")
-        formatter.dateFormat = "EEEE"
+        formatter.dateFormat = "EEEE, d 'de' MMMM"
         return formatter.string(from: Date()).capitalized
     }
 }

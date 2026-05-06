@@ -75,3 +75,86 @@ extension Color {
         self.init(red: r, green: g, blue: b)
     }
 }
+
+// MARK: - Tipografía escalable (respeta Dynamic Type del sistema y la
+// preferencia del usuario en Perfil → Tamaño de letra).
+//
+// Regla: usar SIEMPRE estos helpers en vez de `.system(size:)`. Cualquier
+// tamaño hardcoded queda fuera del sistema de escalado.
+
+extension Font {
+
+    /// Hero number (margen DAC, kg CO₂ destacado). Antes era 56–64pt fijo.
+    static var ohmHero: Font {
+        .system(.largeTitle, design: .rounded, weight: .heavy)
+    }
+
+    /// Títulos grandes de pantalla. Antes era 42pt fijo.
+    static var ohmDisplay: Font {
+        .system(.title, design: .rounded, weight: .heavy)
+    }
+
+    /// Números destacados en cards (stats, kg CO₂ por hora).
+    static var ohmStatNumber: Font {
+        .system(.title2, design: .rounded, weight: .heavy)
+    }
+
+    /// Hora en celdas del grid. Antes era 20pt fijo.
+    static var ohmGridHour: Font {
+        .system(.callout, design: .rounded, weight: .bold)
+    }
+
+    /// Etiquetas de sección (AHORA, HOY POR HORAS, LEYENDA).
+    static var ohmSectionLabel: Font {
+        .footnote.weight(.heavy)
+    }
+}
+
+// MARK: - Preferencia de tamaño de letra del usuario
+//
+// Usamos @AppStorage en vez de SwiftData para evitar migrar el schema
+// de UserPreferences (es Codable y agregar campos podría romper datos
+// existentes). DynamicTypeSize ya hace todo el trabajo pesado: solo se
+// aplica una vez en el root con `.dynamicTypeSize(...)`.
+
+enum AppTextSize: String, CaseIterable, Identifiable {
+    case xSmall  = "xSmall"
+    case small   = "small"
+    case medium  = "medium"   // default — equivale al tamaño del sistema
+    case large   = "large"
+    case xLarge  = "xLarge"
+
+    var id: String { rawValue }
+
+    var dynamicTypeSize: DynamicTypeSize {
+        switch self {
+        case .xSmall: return .xSmall
+        case .small:  return .small
+        case .medium: return .medium
+        case .large:  return .large
+        case .xLarge: return .xLarge
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .xSmall: return "Compacto"
+        case .small:  return "Pequeño"
+        case .medium: return "Mediano"
+        case .large:  return "Grande"
+        case .xLarge: return "Extra grande"
+        }
+    }
+
+    /// Multiplicador relativo, útil para previsualizar la escala
+    /// en el slider del perfil.
+    var previewScale: CGFloat {
+        switch self {
+        case .xSmall: return 0.85
+        case .small:  return 0.92
+        case .medium: return 1.00
+        case .large:  return 1.10
+        case .xLarge: return 1.20
+        }
+    }
+}

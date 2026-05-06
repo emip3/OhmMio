@@ -21,14 +21,14 @@ struct MarginRingView: View {
         ZStack {
             // Track de fondo
             Circle()
-                .stroke(Color(.tertiarySystemFill), lineWidth: 18)
+                .stroke(Color(.tertiarySystemFill), lineWidth: 16)
 
             // Trazo de progreso
             Circle()
                 .trim(from: 0, to: clampedProgress)
                 .stroke(
                     DesignTokens.heroColor(for: riskLevel),
-                    style: StrokeStyle(lineWidth: 18, lineCap: .round)
+                    style: StrokeStyle(lineWidth: 16, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
                 .animation(
@@ -36,13 +36,15 @@ struct MarginRingView: View {
                     value: clampedProgress
                 )
 
-            // Texto central
-            VStack(spacing: 4) {
+            // Texto central — antes 56pt fijo, ahora estilo semántico
+            // que respeta Dynamic Type y el tamaño elegido por el usuario.
+            VStack(spacing: 2) {
                 Text("\(Int(percentage))%")
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .font(.ohmHero)
                     .foregroundStyle(Color.primary)
+                    .contentTransition(.numericText())
                 Text("margen")
-                    .font(.headline)
+                    .font(.subheadline)
                     .foregroundStyle(Color.secondary)
             }
         }
