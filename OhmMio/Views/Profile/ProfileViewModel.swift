@@ -23,9 +23,13 @@ final class ProfileViewModel {
     var state: State = .loading
     var catalog: [ApplianceCatalogEntry] = []
 
+<<<<<<< HEAD
+    let storage: StorageService
+=======
     /// Lista de municipios para el picker manual. Se carga perezosamente la primera vez
     /// que la UI lo necesita.
     var availableMunicipalities: [Region] = []
+>>>>>>> origin/main
 
     /// Mensaje que la vista puede mostrar como "toast" o nota debajo del botón
     /// de detección — separado de `state` porque no queremos romper la UI cargada

@@ -12,7 +12,12 @@ struct ProfileView: View {
     @State var viewModel: ProfileViewModel
     @State private var showAppliancesSheet = false
     @State private var showReceiptSheet = false
+<<<<<<< HEAD
+    @State private var showScannerSheet = false
+    @State private var showReceiptOptions = false
+=======
     @State private var showRegionPickerSheet = false
+>>>>>>> origin/main
     @State private var editableReceipt = ReceiptParser.ParsedReceipt()
 
     @FocusState private var receiptFieldFocus: ReceiptField?
@@ -48,8 +53,13 @@ struct ProfileView: View {
         .sheet(isPresented: $showReceiptSheet) {
             receiptEditorSheet
         }
+<<<<<<< HEAD
+        .fullScreenCover(isPresented: $showScannerSheet) {
+            ScannerView(viewModel: ScannerViewModel(storage: viewModel.storage))
+=======
         .sheet(isPresented: $showRegionPickerSheet) {
             regionPickerSheet
+>>>>>>> origin/main
         }
     }
 
@@ -155,15 +165,26 @@ struct ProfileView: View {
             }
 
             Button("Editar recibo") {
-                editableReceipt = ReceiptParser.ParsedReceipt(
-                    kwhConsumed: user.currentReceipt?.kwhConsumed,
-                    tariffCode: user.currentReceipt?.tariffCode,
-                    totalAmountMXN: user.currentReceipt?.totalAmountMXN,
-                    billingPeriodStart: user.currentReceipt?.billingPeriodStart,
-                    billingPeriodEnd: user.currentReceipt?.billingPeriodEnd,
-                    twelveMonthAverage: user.currentReceipt?.twelveMonthAverage
-                )
-                showReceiptSheet = true
+                showReceiptOptions = true
+            }
+            .confirmationDialog("Actualizar recibo", isPresented: $showReceiptOptions) {
+                Button("Escanear con cámara") {
+                    showScannerSheet = true
+                }
+                Button("Rellenar manualmente") {
+                    editableReceipt = ReceiptParser.ParsedReceipt(
+                        kwhConsumed: user.currentReceipt?.kwhConsumed,
+                        tariffCode: user.currentReceipt?.tariffCode,
+                        totalAmountMXN: user.currentReceipt?.totalAmountMXN,
+                        billingPeriodStart: user.currentReceipt?.billingPeriodStart,
+                        billingPeriodEnd: user.currentReceipt?.billingPeriodEnd,
+                        twelveMonthAverage: user.currentReceipt?.twelveMonthAverage
+                    )
+                    showReceiptSheet = true
+                }
+                Button("Cancelar", role: .cancel) { }
+            } message: {
+                Text("¿Cómo deseas actualizar tu recibo?")
             }
         }
     }
