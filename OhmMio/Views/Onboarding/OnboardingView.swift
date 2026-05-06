@@ -156,6 +156,7 @@ struct OnboardingView: View {
                 }
             }
         }
+        .dismissKeyboardOnTap()
         .sheet(isPresented: $showScannerSheet) {
             ReceiptScannerSheet(
                 onCapture: { image in
@@ -213,6 +214,11 @@ struct OnboardingView: View {
 
 private struct ConfirmReceiptView: View {
     @Binding var parsed: ReceiptParser.ParsedReceipt
+    @FocusState private var focusedField: Field?
+
+    enum Field: Hashable {
+        case kwh, tariff, total
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -232,6 +238,7 @@ private struct ConfirmReceiptView: View {
                 )
                 .multilineTextAlignment(.trailing)
                 .keyboardType(.numberPad)
+                .focused($focusedField, equals: .kwh)
                 .frame(width: 100)
             }
 
@@ -247,6 +254,7 @@ private struct ConfirmReceiptView: View {
                 )
                 .multilineTextAlignment(.trailing)
                 .autocorrectionDisabled()
+                .focused($focusedField, equals: .tariff)
                 .frame(width: 100)
             }
 
@@ -263,11 +271,21 @@ private struct ConfirmReceiptView: View {
                 )
                 .multilineTextAlignment(.trailing)
                 .keyboardType(.decimalPad)
+                .focused($focusedField, equals: .total)
                 .frame(width: 100)
             }
         }
         .padding()
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Listo") {
+                    focusedField = nil
+                }
+                .fontWeight(.semibold)
+            }
+        }
     }
 }
